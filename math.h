@@ -132,11 +132,11 @@ Matrix4x4 Multiply(const Matrix4x4& m1, const Matrix4x4& m2) {
 	return result;
 }
 
-Matrix4x4 MakeAffineMatrix(const Vector3 scale, const Vector3& rotate, const Vector3& translate) {
+Matrix4x4 MakeAffineMatrix(const Vector3& scale, const Vector3& rotate, const Vector3& translate) {
 	Matrix4x4 ScaleResult = MakeScaleMatrix(scale);
 	Matrix4x4 RotateResult = Multiply(MakeRotateXMatrix(rotate.x), Multiply(MakeRatateYMatrix(rotate.y), MakeRatateZMatrix(rotate.z)));
-	Matrix4x4 Transformresult = MakeTranslateMatrix(translate);
-	Matrix4x4 result = Multiply(RotateResult,ScaleResult),Multiply(Transformresult);
+	Matrix4x4 TransformResult = MakeTranslateMatrix(translate);
+	Matrix4x4 result = Multiply(Multiply(TransformResult, RotateResult), ScaleResult);
 	return result;
 }
 
