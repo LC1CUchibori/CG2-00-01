@@ -628,7 +628,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	vertexResourceDesc.SampleDesc.Count = 1;
 	vertexResourceDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
 
-	ID3D12Resource* vertexResource = nullptr;
+	ID3D12Resource* vertexResource = CreateBufferResource(device,sizeof(VertexData)*6);
 	hr = device->CreateCommittedResource(&uploadHeapProperties, D3D12_HEAP_FLAG_NONE, &vertexResourceDesc, D3D12_RESOURCE_STATE_GENERIC_READ, nullptr, IID_PPV_ARGS(&vertexResource));
 	assert(SUCCEEDED(hr));
 #pragma endregion
@@ -657,7 +657,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	D3D12_VERTEX_BUFFER_VIEW vertexBufferView{};
 	vertexBufferView.BufferLocation = vertexResource->GetGPUVirtualAddress();
-	vertexBufferView.SizeInBytes = sizeof(VertexData) * 3;
+	vertexBufferView.SizeInBytes = sizeof(VertexData) * 6;
 	vertexBufferView.StrideInBytes = sizeof(VertexData);
 #pragma endregion
 
@@ -680,6 +680,18 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	// 右下
 	vertexData[2].position = { 0.5f, -0.5f, 0.0f, 1.0f };
 	vertexData[2].texcoord = { 1.0f, 1.0f };
+
+	// 左下2
+	vertexData[3].position = { -0.5f, -0.5f, 0.5f, 1.0f };
+	vertexData[3].texcoord = { 0.0f, 1.0f };
+
+	// 上2
+	vertexData[4].position = { 0.0f, 0.0f, 0.0f, 1.0f };
+	vertexData[4].texcoord = { 0.5f, 0.0f };
+
+	// 右下2
+	vertexData[5].position = { 0.5f, -0.5f, -0.5f, 1.0f };
+	vertexData[5].texcoord = { 1.0f, 1.0f };
 
 #pragma endregion
 
@@ -828,7 +840,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 
 
-			commandList->DrawInstanced(3, 1, 0, 0);
+			commandList->DrawInstanced(6, 1, 0, 0);
 
 			barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
 			// 実際のcommandListのImGuiの描画コマンドを描画
