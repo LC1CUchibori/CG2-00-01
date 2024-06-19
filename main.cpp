@@ -42,8 +42,8 @@ struct Transformmm {
 };
 
 // 透視投影行列
-Matrix4x4 MakePerspectiveFovMatrix(float fovY, float aspectRatio, float nearClip, float farClip) {
-	Matrix4x4 result;
+Matrix4x4 MakePerspectiveFovMatrix(float fovY, float aspectRatio, float nearClip, float farClip);
+	/*Matrix4x4 result;
 	result.m[0][0] = (1 / std::tanf(fovY / 2)) / aspectRatio;
 	result.m[1][0] = 0.0f;
 	result.m[2][0] = 0.0f;
@@ -60,8 +60,8 @@ Matrix4x4 MakePerspectiveFovMatrix(float fovY, float aspectRatio, float nearClip
 	result.m[1][3] = 0.0f;
 	result.m[2][3] = 1.0f;
 	result.m[3][3] = 0.0f;
-	return result;
-};
+	return result;*/
+
 
 // 平行投影行列
 Matrix4x4 MakeOrthographicMatrix(float left, float top, float right, float bottom, float nearClip, float farClip) {
@@ -242,6 +242,9 @@ Transform transform{ {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f},{0.0f,0.0f,0.0f } };
 Transform cameraTransform{ {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f},{0.0f,0.0f,-5.0f} };
 #pragma endregion
 
+#pragma region SpriteTransform変数
+Transform transformSprite{ {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f},{0.0f,0.0f,0.0f} };
+#pragma endregion
 
 #pragma region DescriptorHeapの作成関数
 ID3D12DescriptorHeap* CreateDescriptorHeap(
@@ -753,6 +756,15 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	transformationMatrixResource->Map(0, nullptr, reinterpret_cast<void**>(&transformationMatrixData));
 
 	*transformationMatrixData = MakeIdentity4x4();
+
+	ID3D12Resource* transformationMatirxResourceSprite = CreateBufferResource(device, sizeof(Matrix4x4));
+
+	Matrix4x4* transformtionMatrixDataSprite = nullptr;
+
+	transformationMatirxResourceSprite->Map(0, nullptr, reinterpret_cast<void**>(&transformtionMatrixDataSprite));
+
+	*transformtionMatrixDataSprite = MakeIdentity4x4();
+
 #pragma endregion
 
 #pragma region VertexBufferViewを作成
@@ -776,14 +788,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	VertexData* vertexDataSprite = nullptr;
 	vertexResourceSprite->Map(0, nullptr, reinterpret_cast<void**>(&vertexDataSprite));
-
+	// 1枚目の三角形
 	vertexDataSprite[0].position = { 0.0f,360.0f,0.0f,1.0f };// 左下
 	vertexDataSprite[0].texcoord = { 0.0f,1.0f };
 	vertexDataSprite[1].position = { 0.0f,0.0f,0.0f,1.0f };// 左上
 	vertexDataSprite[1].texcoord = { 0.0f,1.0f };
 	vertexDataSprite[2].position = { 640.0f,360.0f,0.0f,1.0f };// 右下
 	vertexDataSprite[2].texcoord = { 1.0f,1.0f };
-
+	// 2枚目の三角形
 	vertexDataSprite[3].position = { 0.0f,0.0f,0.0f,1.0f };// 左上
 	vertexDataSprite[3].texcoord = { 0.0f,0.0f };
 	vertexDataSprite[4].position = { 640.0f,0.0f,0.0f,1.0f };// 右上
@@ -903,6 +915,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			Matrix4x4 projectionMatrix = MakePerspectiveFovMatrix(0.45f, 1280.0f / 720.0f, 0.1f, 100.0f);
 			Matrix4x4 worldProjectionMatrix = Multiply(worldMatrix, Multiply(viewMatrix, projectionMatrix));
 			*transformationMatrixData = worldProjectionMatrix;
+			// Sprite用のWorldViewProjectionMatrixを作る
+			Matrix4x4 worldMatrixSprite=MakeAffineMatrix(transformSprite.scale, transformSprite.rotate, transformSprite.translata);
+			Matrix4x4 viewMarixSprite = MakeIdentity4x4();
+			Matrix4x4 projectionMatirxSprite = MakeOrthographicMatrix(0.0f, 0.0f, float(kClientWidth), float(kClientHeight), 0.0f, 100.0f);
+			Matrix4x4 worldViewProjectionMatirxSprite=Multiply(worldMatrixSprite, Multiply(viewMarixSprite, projectionMatirxSprite));
+			*transformtionMatrixDataSprite = worldViewProjectionMatirxSprite;
+
 #pragma endregion
 
 			ImGui_ImplDX12_NewFrame();
@@ -960,6 +979,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 			commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
+
 #pragma region CBVを設定する
 			commandList->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress());
 			commandList->SetGraphicsRootConstantBufferView(1, transformationMatrixResource->GetGPUVirtualAddress());
@@ -968,6 +988,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			// 描画!
 			commandList->DrawInstanced(6, 1, 0, 0);
 #pragma endregion
+
+			commandList->IASetVertexBuffers(0, 1, &vertexBufferViewSprite);
+			commandList->SetGraphicsRootConstantBufferView(1, transformationMatirxResourceSprite->GetGPUVirtualAddress());
+			commandList->DrawInstanced(6, 1, 0, 0);
 
 #pragma region 画面表示をできるようにする
 			barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
