@@ -835,6 +835,33 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 #pragma endregion
 
+	const uint32_t kSubdivision = 10;
+
+	const float kLonEvery = 3.14f * 2.0f / float(kSubdivision);
+	const float kLatEvery = 3.14f / float(kSubdivision);
+	for (uint32_t latIndex = 0; latIndex < kSubdivision; latIndex)
+	{
+		float lat = -3.14 / 2.0f + kLatEvery * latIndex;// 現在の緯度
+		// 経度の方向に分割 0 ～ 2π
+		for (uint32_t lonIndex = 0; lonIndex < kSubdivision; ++lonIndex) {
+			uint32_t start = (latIndex * kSubdivision + lonIndex) * 6;
+			float lon = lonIndex * kLonEvery; // 現在の経度
+
+			vertexData[start].position.x = cos(lat) * cos(lon);
+			vertexData[start].position.y = sin(lat);
+			vertexData[start].position.z = cos(lat) * sin(lon);
+			vertexData[start].position.w = 1.0f;
+
+
+
+		}
+	}
+	uint32_t startIndex = (latIndex * kSubdivision + lonIndex) * 6;
+
+
+
+
+
 #pragma region ビューポート
 	D3D12_VIEWPORT viewport{};
 
@@ -923,6 +950,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			*transformtionMatrixDataSprite = worldViewProjectionMatirxSprite;
 
 #pragma endregion
+
 
 			ImGui_ImplDX12_NewFrame();
 			ImGui_ImplWin32_NewFrame();
