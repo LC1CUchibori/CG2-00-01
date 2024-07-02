@@ -1,4 +1,4 @@
-#include <Windows.h>
+﻿#include <Windows.h>
 #include <cstdint>
 #include <string>
 #include <format>
@@ -14,6 +14,7 @@
 #pragma comment(lib,"dxcompiler.lib")
 #pragma comment(lib, "d3d12.lib")
 #pragma comment(lib, "dxgi.lib")
+
 
 
 
@@ -41,26 +42,32 @@ struct Transformmm {
 	Vector3 translate;
 };
 
+
+const int kSubdivision = 16;
+const float pi = 3.14159265358979323846f;
+std::vector<VertexData> vertexData(kSubdivision* kSubdivision * 6);
+
+
 // 透視投影行列
 Matrix4x4 MakePerspectiveFovMatrix(float fovY, float aspectRatio, float nearClip, float farClip);
-	/*Matrix4x4 result;
-	result.m[0][0] = (1 / std::tanf(fovY / 2)) / aspectRatio;
-	result.m[1][0] = 0.0f;
-	result.m[2][0] = 0.0f;
-	result.m[3][0] = 0.0f;
-	result.m[0][1] = 0.0f;
-	result.m[1][1] = (1 / std::tanf(fovY / 2));
-	result.m[2][1] = 0.0f;
-	result.m[3][1] = 0.0f;
-	result.m[0][2] = 0.0f;
-	result.m[1][2] = 0.0f;
-	result.m[2][2] = farClip / (farClip - nearClip);
-	result.m[3][2] = (-farClip * nearClip) / (farClip - nearClip);
-	result.m[0][3] = 0.0f;
-	result.m[1][3] = 0.0f;
-	result.m[2][3] = 1.0f;
-	result.m[3][3] = 0.0f;
-	return result;*/
+/*Matrix4x4 result;
+result.m[0][0] = (1 / std::tanf(fovY / 2)) / aspectRatio;
+result.m[1][0] = 0.0f;
+result.m[2][0] = 0.0f;
+result.m[3][0] = 0.0f;
+result.m[0][1] = 0.0f;
+result.m[1][1] = (1 / std::tanf(fovY / 2));
+result.m[2][1] = 0.0f;
+result.m[3][1] = 0.0f;
+result.m[0][2] = 0.0f;
+result.m[1][2] = 0.0f;
+result.m[2][2] = farClip / (farClip - nearClip);
+result.m[3][2] = (-farClip * nearClip) / (farClip - nearClip);
+result.m[0][3] = 0.0f;
+result.m[1][3] = 0.0f;
+result.m[2][3] = 1.0f;
+result.m[3][3] = 0.0f;
+return result;*/
 
 
 // 平行投影行列
@@ -833,34 +840,43 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	vertexData[5].position = { 0.5f,-0.5f,-0.5f,1.0f };
 	vertexData[5].texcoord = { 1.0f,1.0f };
 
-#pragma endregion
+#pragma region 球体
+	// 経度分割1つ分の角度 φ
+	const float kLonEvery = pi * 2.0f / float(kSubdivision);
+	const float kLatEvery = pi / float(kSubdivision);
 
-	const uint32_t kSubdivision = 10;
+	// 緯度の方向に分割
+	for (int latIndex = 0; latIndex <= kSubdivision; ++latIndex) {
+		float lat = -pi / 2.0f + kLatEvery * latIndex; // φ
 
-	const float kLonEvery = 3.14f * 2.0f / float(kSubdivision);
-	const float kLatEvery = 3.14f / float(kSubdivision);
-	for (uint32_t latIndex = 0; latIndex < kSubdivision; latIndex)
-	{
-		float lat = -3.14 / 2.0f + kLatEvery * latIndex;// 現在の緯度
-		// 経度の方向に分割 0 ～ 2π
-		for (uint32_t lonIndex = 0; lonIndex < kSubdivision; ++lonIndex) {
-			uint32_t start = (latIndex * kSubdivision + lonIndex) * 6;
-			float lon = lonIndex * kLonEvery; // 現在の経度
+		// 経度の方向に分割しながら頂点を操作
+		for (int lonIndex = 0; lonIndex <= kSubdivision; ++lonIndex) {
+			uint32_t start = (latIndex * (kSubdivision + 1) + lonIndex) * 6;
+			float lon = lonIndex * kLonEvery; // θ
 
-			vertexData[start].position.x = cos(lat) * cos(lon);
-			vertexData[start].position.y = sin(lat);
-			vertexData[start].position.z = cos(lat) * sin(lon);
-			vertexData[start].position.w = 1.0f;
+			// 頂点データを入力する
+			// 三角形1つ目
+			vertexData[start].position = { cos(lat) * cos(lon), sin(lat), cos(lat) * sin(lon), 1.0f };
+			vertexData[start].texcoord = { float(lonIndex) / kSubdivision, 1.0f - float(latIndex) / kSubdivision };
 
+			vertexData[start + 1].position = { cos(lat + kLatEvery) * cos(lon), sin(lat + kLatEvery), cos(lat + kLatEvery) * sin(lon), 1.0f };
+			vertexData[start + 1].texcoord = { float(lonIndex) / kSubdivision, 1.0f - float(latIndex + 1) / kSubdivision };
 
+			vertexData[start + 2].position = { cos(lat) * cos(lon + kLonEvery), sin(lat), cos(lat) * sin(lon + kLonEvery), 1.0f };
+			vertexData[start + 2].texcoord = { float(lonIndex + 1) / kSubdivision, 1.0f - float(latIndex) / kSubdivision };
 
+			// 三角形2つ目
+			vertexData[start + 3].position = { cos(lat) * cos(lon + kLonEvery), sin(lat), cos(lat) * sin(lon + kLonEvery), 1.0f };
+			vertexData[start + 3].texcoord = { float(lonIndex + 1) / kSubdivision, 1.0f - float(latIndex) / kSubdivision };
+
+			vertexData[start + 4].position = { cos(lat + kLatEvery) * cos(lon), sin(lat + kLatEvery), cos(lat + kLatEvery) * sin(lon), 1.0f };
+			vertexData[start + 4].texcoord = { float(lonIndex) / kSubdivision, 1.0f - float(latIndex + 1) / kSubdivision };
+
+			vertexData[start + 5].position = { cos(lat + kLatEvery) * cos(lon + kLonEvery), sin(lat + kLatEvery), cos(lat + kLatEvery) * sin(lon + kLonEvery), 1.0f };
+			vertexData[start + 5].texcoord = { float(lonIndex + 1) / kSubdivision, 1.0f - float(latIndex + 1) / kSubdivision };
 		}
 	}
-	uint32_t startIndex = (latIndex * kSubdivision + lonIndex) * 6;
-
-
-
-
+#pragma endregion
 
 #pragma region ビューポート
 	D3D12_VIEWPORT viewport{};
@@ -935,19 +951,22 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		else {
 			//ゲームの処理
 #pragma region Transformを使ってCBufferを更新する
-			transform.rotate.y += 0.03f;
-			Matrix4x4 worldMatrix = MakeAffineMatrix(transform.scale, transform.rotate, transform.translata);
+			// 変換行列の計算部分を修正する
+			transform.rotate.y += 0.03f;  // 回転速度を調整する場合はここを変更
+			Matrix4x4 worldMatrix = MakeRatateYMatrix(transform.rotate.y);
 			Matrix4x4 cameraMatrix = MakeAffineMatrix(cameraTransform.scale, cameraTransform.rotate, cameraTransform.translata);
 			Matrix4x4 viewMatrix = Inverse(cameraMatrix);
 			Matrix4x4 projectionMatrix = MakePerspectiveFovMatrix(0.45f, 1280.0f / 720.0f, 0.1f, 100.0f);
-			Matrix4x4 worldProjectionMatrix = Multiply(worldMatrix, Multiply(viewMatrix, projectionMatrix));
+			Matrix4x4 worldProjectionMatrix = Multiply(Multiply(worldMatrix, viewMatrix), projectionMatrix);
 			*transformationMatrixData = worldProjectionMatrix;
+
 			// Sprite用のWorldViewProjectionMatrixを作る
-			Matrix4x4 worldMatrixSprite=MakeAffineMatrix(transformSprite.scale, transformSprite.rotate, transformSprite.translata);
-			Matrix4x4 viewMarixSprite = MakeIdentity4x4();
-			Matrix4x4 projectionMatirxSprite = MakeOrthographicMatrix(0.0f, 0.0f, float(kClientWidth), float(kClientHeight), 0.0f, 100.0f);
-			Matrix4x4 worldViewProjectionMatirxSprite=Multiply(worldMatrixSprite, Multiply(viewMarixSprite, projectionMatirxSprite));
-			*transformtionMatrixDataSprite = worldViewProjectionMatirxSprite;
+			Matrix4x4 worldMatrixSprite = MakeAffineMatrix(transformSprite.scale, transformSprite.rotate, transformSprite.translata);
+			Matrix4x4 viewMatrixSprite = MakeIdentity4x4();
+			Matrix4x4 projectionMatrixSprite = MakeOrthographicMatrix(0.0f, 0.0f, static_cast<float>(kClientWidth), static_cast<float>(kClientHeight), 0.0f, 100.0f);
+			Matrix4x4 worldViewProjectionMatrixSprite = Multiply(worldMatrixSprite, Multiply(viewMatrixSprite, projectionMatrixSprite));
+			*transformtionMatrixDataSprite = worldViewProjectionMatrixSprite;
+
 
 #pragma endregion
 
@@ -1014,12 +1033,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandleGPU);
 #pragma endregion
 			// 描画!
-			commandList->DrawInstanced(6, 1, 0, 0);
+			commandList->DrawInstanced(kSubdivision*kSubdivision*6, 1, 0, 0);
 #pragma endregion
 
 			commandList->IASetVertexBuffers(0, 1, &vertexBufferViewSprite);
 			commandList->SetGraphicsRootConstantBufferView(1, transformationMatirxResourceSprite->GetGPUVirtualAddress());
-			commandList->DrawInstanced(6, 1, 0, 0);
+			//commandList->DrawInstanced(6, 1, 0, 0);
 
 #pragma region 画面表示をできるようにする
 			barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
