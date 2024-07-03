@@ -1,4 +1,4 @@
-﻿#include <Windows.h>
+#include <Windows.h>
 #include <cstdint>
 #include <string>
 #include <format>
@@ -14,7 +14,6 @@
 #pragma comment(lib,"dxcompiler.lib")
 #pragma comment(lib, "d3d12.lib")
 #pragma comment(lib, "dxgi.lib")
-
 
 
 
@@ -41,12 +40,6 @@ struct Transformmm {
 	Vector3 rotate;
 	Vector3 translate;
 };
-
-
-const int kSubdivision = 16;
-const float pi = 3.14159265358979323846f;
-std::vector<VertexData> vertexData(kSubdivision* kSubdivision * 6);
-
 
 // 透視投影行列
 Matrix4x4 MakePerspectiveFovMatrix(float fovY, float aspectRatio, float nearClip, float farClip);
@@ -840,18 +833,20 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	vertexData[5].position = { 0.5f,-0.5f,-0.5f,1.0f };
 	vertexData[5].texcoord = { 1.0f,1.0f };
 
-#pragma region 球体
-	// 経度分割1つ分の角度 φ
-	const float kLonEvery = pi * 2.0f / float(kSubdivision);
-	const float kLatEvery = pi / float(kSubdivision);
+#pragma endregion
+
+	const int kSubdivision = 10;
+
+	const float kLonEvery = 3.14f * 2.0f / float(kSubdivision);
+	const float kLatEvery = 3.14f / float(kSubdivision);
 
 	// 緯度の方向に分割
 	for (int latIndex = 0; latIndex <= kSubdivision; ++latIndex) {
-		float lat = -pi / 2.0f + kLatEvery * latIndex; // φ
+		float lat = -3.14f / 2.0f + kLatEvery * latIndex; // φ
 
 		// 経度の方向に分割しながら頂点を操作
 		for (int lonIndex = 0; lonIndex <= kSubdivision; ++lonIndex) {
-			uint32_t start = (latIndex * (kSubdivision + 1) + lonIndex) * 6;
+			uint32_t start = ((uint32_t)latIndex * (kSubdivision + 1) + lonIndex) * 6;
 			float lon = lonIndex * kLonEvery; // θ
 
 			// 頂点データを入力する
@@ -876,7 +871,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			vertexData[start + 5].texcoord = { float(lonIndex + 1) / kSubdivision, 1.0f - float(latIndex + 1) / kSubdivision };
 		}
 	}
-#pragma endregion
+
 
 #pragma region ビューポート
 	D3D12_VIEWPORT viewport{};
@@ -951,7 +946,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		else {
 			//ゲームの処理
 #pragma region Transformを使ってCBufferを更新する
-			// 変換行列の計算部分を修正する
 			transform.rotate.y += 0.03f;  // 回転速度を調整する場合はここを変更
 			Matrix4x4 worldMatrix = MakeRatateYMatrix(transform.rotate.y);
 			Matrix4x4 cameraMatrix = MakeAffineMatrix(cameraTransform.scale, cameraTransform.rotate, cameraTransform.translata);
@@ -959,14 +953,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			Matrix4x4 projectionMatrix = MakePerspectiveFovMatrix(0.45f, 1280.0f / 720.0f, 0.1f, 100.0f);
 			Matrix4x4 worldProjectionMatrix = Multiply(Multiply(worldMatrix, viewMatrix), projectionMatrix);
 			*transformationMatrixData = worldProjectionMatrix;
-
 			// Sprite用のWorldViewProjectionMatrixを作る
-			Matrix4x4 worldMatrixSprite = MakeAffineMatrix(transformSprite.scale, transformSprite.rotate, transformSprite.translata);
-			Matrix4x4 viewMatrixSprite = MakeIdentity4x4();
-			Matrix4x4 projectionMatrixSprite = MakeOrthographicMatrix(0.0f, 0.0f, static_cast<float>(kClientWidth), static_cast<float>(kClientHeight), 0.0f, 100.0f);
-			Matrix4x4 worldViewProjectionMatrixSprite = Multiply(worldMatrixSprite, Multiply(viewMatrixSprite, projectionMatrixSprite));
-			*transformtionMatrixDataSprite = worldViewProjectionMatrixSprite;
-
+			Matrix4x4 worldMatrixSprite=MakeAffineMatrix(transformSprite.scale, transformSprite.rotate, transformSprite.translata);
+			Matrix4x4 viewMarixSprite = MakeIdentity4x4();
+			Matrix4x4 projectionMatirxSprite = MakeOrthographicMatrix(0.0f, 0.0f, float(kClientWidth), float(kClientHeight), 0.0f, 100.0f);
+			Matrix4x4 worldViewProjectionMatirxSprite=Multiply(worldMatrixSprite, Multiply(viewMarixSprite, projectionMatirxSprite));
+			*transformtionMatrixDataSprite = worldViewProjectionMatirxSprite;
 
 #pragma endregion
 
@@ -1033,12 +1025,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandleGPU);
 #pragma endregion
 			// 描画!
-			commandList->DrawInstanced(kSubdivision*kSubdivision*6, 1, 0, 0);
+			commandList->DrawInstanced(6, 1, 0, 0);
 #pragma endregion
 
 			commandList->IASetVertexBuffers(0, 1, &vertexBufferViewSprite);
 			commandList->SetGraphicsRootConstantBufferView(1, transformationMatirxResourceSprite->GetGPUVirtualAddress());
-			//commandList->DrawInstanced(6, 1, 0, 0);
+			commandList->DrawInstanced(kSubdivision*kSubdivision, 1, 0, 0);
 
 #pragma region 画面表示をできるようにする
 			barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
