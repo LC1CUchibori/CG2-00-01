@@ -41,6 +41,12 @@ struct Transformmm {
 	Vector3 translate;
 };
 
+const float pi = 3.14159265358979323846f;
+const int kSubdivision = 16; // 適切な分割数を設定してください。
+
+// 頂点データの配列
+std::vector<VertexData> vertexData(kSubdivision* kSubdivision * 6);
+
 // 透視投影行列
 Matrix4x4 MakePerspectiveFovMatrix(float fovY, float aspectRatio, float nearClip, float farClip);
 /*Matrix4x4 result;
@@ -835,8 +841,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 #pragma endregion
 
-	const int kSubdivision = 10;
-
 	const float kLonEvery = 3.14f * 2.0f / float(kSubdivision);
 	const float kLatEvery = 3.14f / float(kSubdivision);
 
@@ -1025,12 +1029,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandleGPU);
 #pragma endregion
 			// 描画!
-			commandList->DrawInstanced(6, 1, 0, 0);
+			commandList->DrawInstanced(kSubdivision*kSubdivision*6, 1, 0, 0);
 #pragma endregion
 
 			commandList->IASetVertexBuffers(0, 1, &vertexBufferViewSprite);
 			commandList->SetGraphicsRootConstantBufferView(1, transformationMatirxResourceSprite->GetGPUVirtualAddress());
-			commandList->DrawInstanced(kSubdivision*kSubdivision, 1, 0, 0);
+			/*commandList->DrawInstanced(kSubdivision*kSubdivision, 1, 0, 0);*/
 
 #pragma region 画面表示をできるようにする
 			barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
