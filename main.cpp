@@ -953,7 +953,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 #pragma region コマンドを積み込み確定させる
 			UINT backBufferIndex = swapChain->GetCurrentBackBufferIndex();
-
+			
 #pragma region TransitionBarrierを貼る
 			D3D12_RESOURCE_BARRIER barrier{};
 
