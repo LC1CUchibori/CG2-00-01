@@ -28,6 +28,7 @@ extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg
 struct VertexData {
 	Vector4 position;
 	Vector2 texcoord;
+
 };
 
 
