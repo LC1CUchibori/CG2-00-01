@@ -741,6 +741,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	*transformationMatrixDataSprite = MakeIdentity4x4();
 #pragma endregion
 
+
+
 	////vertexResource頂点バッファーを作成する
 	D3D12_VERTEX_BUFFER_VIEW vertexBufferView{ };
 	//リソースの先頭のアドレスから使う
@@ -943,9 +945,16 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 			// ImGuiウィンドウの作成
 			ImGui::Begin("Transform Controls");
-			ImGui::SliderFloat3("Position", &transform.translata.x, -5.0f, 5.0f);
-			ImGui::SliderFloat3("Rotation", &transform.rotate.x, -180.0f, 180.0f);
-			ImGui::SliderFloat3("Scale", &transform.scale.x, 0.1f, 2.0f);
+			if (ImGui::CollapsingHeader("Sphere")) {
+				ImGui::SliderFloat3("Position", &transform.translata.x, -5.0f, 5.0f);
+				ImGui::SliderFloat3("Rotation", &transform.rotate.x, -180.0f, 180.0f);
+				ImGui::SliderFloat3("Scale", &transform.scale.x, 0.1f, 2.0f);
+			}
+			if (ImGui::CollapsingHeader("Sprite")) {
+				ImGui::SliderFloat3("Position", &transformSprite.translata.x, -180.0f, 180.0f);
+				ImGui::SliderFloat3("Rotation", &transformSprite.rotate.x, -180.0f, 180.0f);
+				ImGui::SliderFloat3("Scale", &transformSprite.scale.x, 0.1f, 2.0f);
+			}
 			ImGui::End();
 
 			ImGui::Render();
@@ -1012,7 +1021,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			// TransFormationMatrixBufferの場所を設定
 			commandList->SetGraphicsRootConstantBufferView(1, transformationMatrixResourceSprite->GetGPUVirtualAddress());
 			// 描画！ (DrawCall/ドローコール)
-			//commandList->DrawInstanced(6, 1, 0, 0);
+			commandList->DrawInstanced(6, 1, 0, 0);
 #pragma endregion
 
 #pragma region 画面表示をできるようにする
