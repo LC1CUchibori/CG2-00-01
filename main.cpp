@@ -828,6 +828,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			vertexData[start].normal.x = vertexData[start].position.x;
 			vertexData[start].normal.y = vertexData[start].position.y;
 			vertexData[start].normal.z = vertexData[start].position.z;
+
 			//基準点b
 			start++;
 			vertexData[start].position.x = std::cosf(lat + kLatEvery) * std::cosf(lon);
@@ -838,6 +839,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			vertexData[start].normal.x = vertexData[start].position.x;
 			vertexData[start].normal.y = vertexData[start].position.y;
 			vertexData[start].normal.z = vertexData[start].position.z;
+
 			//基準点c
 			start++;
 			vertexData[start].position.x = std::cosf(lat) * std::cosf(lon + kLonEvery);
@@ -845,6 +847,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			vertexData[start].position.z = std::cosf(lat) * std::sinf(lon + kLonEvery);
 			vertexData[start].position.w = w;
 			vertexData[start].texcoord = { float(lonIndex + 1.0f) / float(kSubdivision), 1.0f - float(latIndex) / float(kSubdivision) };
+			vertexData[start].normal.x = vertexData[start].position.x;
+			vertexData[start].normal.y = vertexData[start].position.y;
+			vertexData[start].normal.z = vertexData[start].position.z;
 
 			//基準点c
 			start++;
