@@ -773,12 +773,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	transformationMatrixData->World = MakeIdentity4x4();
 #pragma endregion
 
+#pragma region Sprite用のリソース
 	// Sprite用のマテリアルリソースを作る
 	ID3D12Resource* materialResourceSprite = CreateBufferResource(device, sizeof(Material));
     Material* materialDataSprite = nullptr;
 	materialResourceSprite->Map(0, nullptr, reinterpret_cast<void**>(&materialDataSprite));
 	materialDataSprite->color = { Vector4(1.0f, 1.0f, 1.0f, 1.0f) };
 	materialDataSprite->enableLighting = true;
+#pragma endregion
 
 	////vertexResource頂点バッファーを作成する
 	D3D12_VERTEX_BUFFER_VIEW vertexBufferView{ };
@@ -804,6 +806,24 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	directionalLightData->direction = { 0.0f,-1.0f,0.0f };
 	directionalLightData->intensity = 1.0f;
 #pragma endregion
+
+#pragma region Index用のリソース
+	ID3D12Resource* indeResourceSprite = CreateBufferResource(device, sizeof(uint32_t) * 6);
+
+	D3D12_INDEX_BUFFER_VIEW indexBufferViewSprite{};
+	// リソースの先頭のアドレスから使う
+	indexBufferViewSprite.BufferLocation = indeResourceSprite->GetGPUVirtualAddress();
+	// 使用するリソースのサイズはインデックス6つ分のサイズ
+	indexBufferViewSprite.SizeInBytes = sizeof(uint32_t) * 6;
+	// インデックスはuint32_tとする
+	indexBufferViewSprite.Format = DXGI_FORMAT_R32_UINT;
+#pragma endregion
+
+	// インデックスリソースにデータを書き込む
+	uint32_t* indexDataSprite = nullptr;
+	indeResourceSprite->Map(0, nullptr, reinterpret_cast<void**>(&indexDataSprite));
+	indexDataSprite[0] = 0; indexDataSprite[1] = 1; indexDataSprite[2] = 2;
+	indexDataSprite[3] = 1; indexDataSprite[4] = 3; indexDataSprite[5] = 2;
 
 	//経度分割1つ分の経度φd
 	const float kLonEvery = 2 * std::numbers::pi_v<float> / (float)kSubdivision;
@@ -1107,17 +1127,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 
 #pragma region 三角形の描画
-			////三角形用
-			//commandList->IASetVertexBuffers(0, 1, &vertexBufferView);
-			////現状を設定。POSに設定しているものとはまた別。おなじ物を設定すると考えておけばいい
-			//commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-			//commandList->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress());
-			////wvp用のCBufferの場所を設定
-			//commandList->SetGraphicsRootConstantBufferView(1, transformationMatrixResource->GetGPUVirtualAddress());
-			//commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandleGPU);
-			//commandList->SetGraphicsRootDescriptorTable(2, useMonsterBall ? textureSrvHandleGPU2 : textureSrvHandleGPU);
-			////描画！
-			//commandList->DrawInstanced(kSubdivision * kSubdivision * 6, 1, 0, 0);
 			commandList->IASetVertexBuffers(0, 1, &vertexBufferView);
 			//現状を設定。POSに設定しているものとはまた別。おなじ物を設定すると考えておけばいい
 			commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
@@ -1130,6 +1139,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			commandList->DrawInstanced(kSubdivision * kSubdivision * 6, 1, 0, 0);
 #pragma endregion
 
+			commandList->IASetIndexBuffer(&indexBufferViewSprite);
+			commandList->DrawIndexedInstanced(6, 1, 0, 0, 0);
 
 #pragma region Spriteの描画
 			commandList->IASetVertexBuffers(0, 1, &vertexBufferViewSprite);
