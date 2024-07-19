@@ -759,6 +759,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	*transformationMatrixData = MakeIdentity4x4();
 #pragma endregion
 
+
 #pragma region TransfomationMatrixSprite用のResourceを作る
 	// Sprite用のTransfomationMatrix用のリソースを作る。Matrix4x4 1つ分のサイズを用意する
 	ID3D12Resource* transformationMatrixResourceSprite = CreateBufferResource(device, sizeof(Matrix4x4));
