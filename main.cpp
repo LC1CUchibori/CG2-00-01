@@ -25,17 +25,6 @@ extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg
 #pragma comment(lib,"dxguid.lib")
 #pragma comment(lib,"dxcompiler.lib")
 
-struct VertexData {
-	Vector4 position;
-	Vector2 texcoord;
-	Vector3 normal;
-};
-
-struct Material
-{
-	Vector4 color;
-	int32_t enableLighting;
-};
 
 #pragma region Resource作成の関数化(CreateBufferResource)
 ID3D12Resource* CreateBufferResource(ID3D12Device* device, size_t sizeInBytes) {
@@ -608,6 +597,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	rootParameters[2].DescriptorTable.pDescriptorRanges = descriptorRange;
 	rootParameters[2].DescriptorTable.NumDescriptorRanges = _countof(descriptorRange);
 
+	rootParameters[3].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+	rootParameters[3].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+	rootParameters[3].Descriptor.ShaderRegister = 1;
+
+
 	descriptionRootSignature.pParameters = rootParameters;
 	descriptionRootSignature.NumParameters = _countof(rootParameters);
 #pragma endregion
@@ -778,13 +772,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	// Sprite用のマテリアルリソースを作る
 	ID3D12Resource* materialResourceSprite = CreateBufferResource(device, sizeof(Material));
-
     Material* materialDataSprite = nullptr;
-
 	materialResourceSprite->Map(0, nullptr, reinterpret_cast<void**>(&materialDataSprite));
-
 	materialDataSprite->color = { Vector4(1.0f, 1.0f, 1.0f, 1.0f) };
-
 	materialDataSprite->enableLighting = true;
 
 	////vertexResource頂点バッファーを作成する

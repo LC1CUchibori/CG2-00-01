@@ -31,6 +31,28 @@ struct Transform{
 	Vector3 translata;
 };
 
+struct VertexData {
+	Vector4 position;
+	Vector2 texcoord;
+	Vector3 normal;
+};
+
+struct Material {
+	Vector4 color;
+	int32_t enableLighting;
+};
+
+struct TransormationMatrix {
+	Matrix4x4 WVP;
+	Matrix4x4 World;
+};
+
+struct DirectionalLighting {
+	Vector4 color;
+	Vector3 direction;
+	float intensity;
+};
+
 Matrix4x4 MakeIdentity4x4() {
 	Matrix4x4 result;
 
