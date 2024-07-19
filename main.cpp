@@ -753,22 +753,24 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 #pragma endregion
 
 #pragma region TransformationMatrix用のResourceを作る
-	ID3D12Resource* transformationMatrixResource = CreateBufferResource(device, sizeof(Matrix4x4));
-	Matrix4x4* transformationMatrixData = nullptr;
+	ID3D12Resource* transformationMatrixResource = CreateBufferResource(device, sizeof(TransformationMatrix));
+	TransformationMatrix* transformationMatrixData = nullptr;
 	transformationMatrixResource->Map(0, nullptr, reinterpret_cast<void**>(&transformationMatrixData));
-	*transformationMatrixData = MakeIdentity4x4();
+	transformationMatrixData->WVP = MakeIdentity4x4();
+	transformationMatrixData->World = MakeIdentity4x4();
 #pragma endregion
 
 
 #pragma region TransfomationMatrixSprite用のResourceを作る
 	// Sprite用のTransfomationMatrix用のリソースを作る。Matrix4x4 1つ分のサイズを用意する
-	ID3D12Resource* transformationMatrixResourceSprite = CreateBufferResource(device, sizeof(Matrix4x4));
+	ID3D12Resource* transformationMatrixResourceSprite = CreateBufferResource(device, sizeof(TransformationMatrix));
 	// データを書き込む
-	Matrix4x4* transformationMatrixDataSprite = nullptr;
+	TransformationMatrix* transformationMatrixDataSprite = nullptr;
 	// 書き込むためのアドレスを取得
 	transformationMatrixResourceSprite->Map(0, nullptr, reinterpret_cast<void**>(&transformationMatrixDataSprite));
 	// 単位行列を書き込んでおく
-	*transformationMatrixDataSprite = MakeIdentity4x4();
+	transformationMatrixData->WVP = MakeIdentity4x4();
+	transformationMatrixData->World = MakeIdentity4x4();
 #pragma endregion
 
 	// Sprite用のマテリアルリソースを作る
@@ -1013,7 +1015,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			Matrix4x4 viewMatrix = Inverse(cameraMatrix);
 			Matrix4x4 projectionMatrix = MakePerspectiveFovMatrix(0.45f, 1280.0f / 720.0f, 0.1f, 100.0f);
 			Matrix4x4 worldProjectionMatrix = Multiply(worldMatrix, Multiply(viewMatrix, projectionMatrix));
-			*transformationMatrixData = worldProjectionMatrix;
+			transformationMatrixData->WVP = worldProjectionMatrix;
+			transformationMatrixData->World = worldMatrix;
 #pragma endregion
 
 #pragma region WVPMatrixを作って書き込む
@@ -1021,7 +1024,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			Matrix4x4 viewMatrixSprite = MakeIdentity4x4();
 			Matrix4x4 projectionMatrixSprite = MakeOrthographicMatrix(0.0f, 0.0f, float(kClientWidth), float(kClientHeight), 0.0f, 100.0f);
 			Matrix4x4 worldViewProjectionMatrixSprite = Multiply(worldMatrixSprite, Multiply(viewMatrixSprite, projectionMatrixSprite));
-			*transformationMatrixDataSprite = worldViewProjectionMatrixSprite;
+			transformationMatrixDataSprite->WVP = worldViewProjectionMatrixSprite;
+			transformationMatrixDataSprite->World = worldMatrix;
 #pragma endregion
 
 			ImGui_ImplDX12_NewFrame();
@@ -1086,15 +1090,25 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 
 #pragma region 三角形の描画
-			//三角形用
+			////三角形用
+			//commandList->IASetVertexBuffers(0, 1, &vertexBufferView);
+			////現状を設定。POSに設定しているものとはまた別。おなじ物を設定すると考えておけばいい
+			//commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+			//commandList->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress());
+			////wvp用のCBufferの場所を設定
+			//commandList->SetGraphicsRootConstantBufferView(1, transformationMatrixResource->GetGPUVirtualAddress());
+			//commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandleGPU);
+			//commandList->SetGraphicsRootDescriptorTable(2, useMonsterBall ? textureSrvHandleGPU2 : textureSrvHandleGPU);
+			////描画！
+			//commandList->DrawInstanced(kSubdivision * kSubdivision * 6, 1, 0, 0);
 			commandList->IASetVertexBuffers(0, 1, &vertexBufferView);
 			//現状を設定。POSに設定しているものとはまた別。おなじ物を設定すると考えておけばいい
 			commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 			commandList->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress());
 			//wvp用のCBufferの場所を設定
 			commandList->SetGraphicsRootConstantBufferView(1, transformationMatrixResource->GetGPUVirtualAddress());
-			commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandleGPU);
 			commandList->SetGraphicsRootDescriptorTable(2, useMonsterBall ? textureSrvHandleGPU2 : textureSrvHandleGPU);
+			commandList->SetGraphicsRootConstantBufferView(3, directionalLightSprite->GetGPUVirtualAddress());
 			//描画！
 			commandList->DrawInstanced(kSubdivision * kSubdivision * 6, 1, 0, 0);
 #pragma endregion
