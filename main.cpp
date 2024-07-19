@@ -1036,16 +1036,28 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			ImGui_ImplDX12_NewFrame();
 			ImGui_ImplWin32_NewFrame();
 			ImGui::NewFrame();
-			ImGui::Begin("Color Picker");
-			ImGui::ColorEdit4("Text Color With Flags", &materialData->color.x, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_AlphaBar);
-			ImGui::End();
 
 			// ImGuiウィンドウの作成
 			ImGui::Begin("Transform Controls");
-			ImGui::SliderFloat3("Position", &transform.translata.x, -5.0f, 5.0f);
-			ImGui::SliderFloat3("Rotation", &transform.rotate.x, -180.0f, 180.0f);
-			ImGui::SliderFloat3("Scale", &transform.scale.x, 0.1f, 2.0f);
+			if (ImGui::CollapsingHeader("SphereTransform")) {
+				ImGui::ColorEdit4("Text Color With Flags", &materialData->color.x, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_AlphaBar);
+				ImGui::SliderFloat3("Position", &transform.translata.x, -5.0f, 5.0f);// 移動
+				ImGui::SliderFloat3("Rotation", &transform.rotate.x, -180.0f, 180.0f);// 回転変更
+				ImGui::SliderFloat3("Scale", &transform.scale.x, 0.1f, 2.0f);// 大きさ変更
+			}
+			if (ImGui::CollapsingHeader("Light")) {
+				ImGui::ColorEdit3("LightColor", &directionalLightData->color.x, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_AlphaBar);
+				ImGui::SliderFloat3("Direction", &directionalLightData->direction.x, -10.0f, 10.0f);
+				ImGui::SliderFloat("Intensity", &directionalLightData->intensity, -10.0f, 10.0f);
+			}
 			ImGui::Checkbox("useMonsterBall", &useMonsterBall);
+			// リセット
+			if (ImGui::Button("Delete")) {
+				transform = { {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f} ,{0.0f,0.0f,0.0f} };
+				directionalLightData->color = { 1.0f,1.0f,1.0f,1.0f };
+				directionalLightData->direction = { 0.0f,-1.0f,0.0f };
+				directionalLightData->intensity = 1.0f;
+			}
 			ImGui::End();
 
 			ImGui::Render();
