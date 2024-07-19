@@ -41,49 +41,9 @@ struct Transformmm {
 	Vector3 translate;
 };
 
-// 透視投影行列
-Matrix4x4 MakePerspectiveFovMatrix(float fovY, float aspectRatio, float nearClip, float farClip) {
-	Matrix4x4 result;
-	result.m[0][0] = (1 / std::tanf(fovY / 2)) / aspectRatio;
-	result.m[1][0] = 0.0f;
-	result.m[2][0] = 0.0f;
-	result.m[3][0] = 0.0f;
-	result.m[0][1] = 0.0f;
-	result.m[1][1] = (1 / std::tanf(fovY / 2));
-	result.m[2][1] = 0.0f;
-	result.m[3][1] = 0.0f;
-	result.m[0][2] = 0.0f;
-	result.m[1][2] = 0.0f;
-	result.m[2][2] = farClip / (farClip - nearClip);
-	result.m[3][2] = (-farClip * nearClip) / (farClip - nearClip);
-	result.m[0][3] = 0.0f;
-	result.m[1][3] = 0.0f;
-	result.m[2][3] = 1.0f;
-	result.m[3][3] = 0.0f;
-	return result;
-};
 
-// 平行投影行列
-Matrix4x4 MakeOrthographicMatrix(float left, float top, float right, float bottom, float nearClip, float farClip) {
-	Matrix4x4 result;
-	result.m[0][0] = 2 / (right - left);
-	result.m[1][0] = 0.0f;
-	result.m[2][0] = 0.0f;
-	result.m[3][0] = (left + right) / (left - right);
-	result.m[0][1] = 0.0f;
-	result.m[1][1] = 2 / (top - bottom);
-	result.m[2][1] = 0.0f;
-	result.m[3][1] = (top + bottom) / (bottom - top);
-	result.m[0][2] = 0.0f;
-	result.m[1][2] = 0.0f;
-	result.m[2][2] = 1 / (farClip - nearClip);
-	result.m[3][2] = nearClip / (nearClip - farClip);
-	result.m[0][3] = 0.0f;
-	result.m[1][3] = 0.0f;
-	result.m[2][3] = 0.0f;
-	result.m[3][3] = 1.0f;
-	return result;
-};
+
+
 
 #pragma region Resource作成の関数化(CreateBufferResource)
 ID3D12Resource* CreateBufferResource(ID3D12Device* device, size_t sizeInBytes) {
