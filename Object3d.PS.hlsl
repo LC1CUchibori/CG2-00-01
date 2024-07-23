@@ -1,6 +1,5 @@
 #include "object3d.hlsli"
 
-
 struct Material
 {
     float32_t4 color;
