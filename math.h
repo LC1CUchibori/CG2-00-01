@@ -119,7 +119,7 @@ ModelData LoadObjFile(const std::string& directoryPath, const std::string& filen
 			}
 		}
 	}
-	// 
+	// モデル読み込み
 }
 
 Matrix4x4 MakeIdentity4x4() {
