@@ -1,6 +1,5 @@
 #include "object3d.hlsli"
 
-
 struct TransformationMatrix
 {
     float32_t4x4 WVP;
