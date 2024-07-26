@@ -363,6 +363,7 @@ ModelData LoadObjFile(const std::string& directoryPath, const std::string& filen
 			Vector4 position;
 			s >> position.x >> position.y >> position.z;
 			position.w = 1.0f;
+			position.x *= -1.0f;
 			positions.push_back(position);
 		}
 		else if (identifier == "vt") {
@@ -373,9 +374,11 @@ ModelData LoadObjFile(const std::string& directoryPath, const std::string& filen
 		else if (identifier == "vn") {
 			Vector3 normal;
 			s >> normal.x >> normal.y >> normal.z;
+			normal.x *= -1.0f;
 			normals.push_back(normal);
 		}
 		else if (identifier == "f") {
+			VertexData triangle[3];
 			// 面は三角形限定。その他は未対応
 			for (int32_t faceVertex = 0; faceVertex < 3; ++faceVertex) {
 				std::string vertexDefinition;
@@ -390,11 +393,16 @@ ModelData LoadObjFile(const std::string& directoryPath, const std::string& filen
 				}
 				// 要素へのIndexから、実際の要素の値をを取得して頂点を構築する
 				Vector4 position = positions[elementIndeices[0] - 1];
-				Vector2 tecoord = texcoords[elementIndeices[1] - 1];
+				Vector2 texcoord = texcoords[elementIndeices[1] - 1];
 				Vector3 normal = normals[elementIndeices[2] - 1];
-				VertexData vertex = { position,tecoord,normal };
+				VertexData vertex = { position,texcoord,normal };
 				modelData.vertices.push_back(vertex);
+				triangle[faceVertex] = { position,texcoord,normal};
 			}
+			// 頂点を逆順で登録することで、回り順を逆にする
+			modelData.vertices.push_back(triangle[2]);
+			modelData.vertices.push_back(triangle[1]);
+			modelData.vertices.push_back(triangle[0]);
 		}
 	}
 	return modelData;
@@ -877,16 +885,16 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	// モデルデータ読み込み
 	ModelData modelData = LoadObjFile("resources", "plane.obj");
 	// 頂点リソースを作成
-	ID3D12Resource* vertexModelResource = CreateBufferResource(device, sizeof(VertexData) + modelData.vertices.size());
+	ID3D12Resource* vertexModelResource = CreateBufferResource(device, sizeof(VertexData) * modelData.vertices.size());
 	// 頂点バッファビューを作成する
-	D3D12_VERTEX_BUFFER_VIEW vertexModelBufferView;
-	vertexModelBufferView.BufferLocation = vertexModelResource->GetGPUVirtualAddress(); // リソース先頭のアドレスから得る
-	vertexModelBufferView.SizeInBytes = UINT(sizeof(VertexData) + modelData.vertices.size()); // 使用するリソースのサイズは頂点のサイズ
-	vertexModelBufferView.StrideInBytes = sizeof(VertexData); // 頂点あたりのサイズ
+	D3D12_VERTEX_BUFFER_VIEW vertexBufferView;
+	vertexBufferView.BufferLocation = vertexResource->GetGPUVirtualAddress(); // リソース先頭のアドレスから得る
+	vertexBufferView.SizeInBytes = UINT(sizeof(VertexData) * modelData.vertices.size()); // 使用するリソースのサイズは頂点のサイズ
+	vertexBufferView.StrideInBytes = sizeof(VertexData); // 頂点あたりのサイズ
 	// 頂点バッファリソースデータを書き込む
-	VertexData* vertexModelData = nullptr;
-	vertexModelResource->Map(0, nullptr, reinterpret_cast<void**>(&vertexModelData)); // 書き込むためのアドレスを取得
-	std::memcpy(vertexModelData, modelData.vertices.data(), sizeof(VertexData) + modelData.vertices.size()); // 頂点データをリソースにコピー
+	VertexData* vertexData = nullptr;
+	vertexResource->Map(0, nullptr, reinterpret_cast<void**>(&vertexData)); // 書き込むためのアドレスを取得
+	std::memcpy(vertexData, modelData.vertices.data(), sizeof(VertexData) * modelData.vertices.size()); // 頂点データをリソースにコピー
 
 #pragma endregion
 	
@@ -1242,7 +1250,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 
 #pragma region 三角形の描画
-			commandList->IASetVertexBuffers(0, 1, &vertexModelBufferView);
+			commandList->IASetVertexBuffers(0, 1, &vertexBufferView);
 			//現状を設定。POSに設定しているものとはまた別。おなじ物を設定すると考えておけばいい
 			commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 			commandList->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress());
