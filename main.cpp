@@ -860,18 +860,18 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	materialData->uvTransform = MakeIdentity4x4();
 	materialDataSprite->uvTransform = MakeIdentity4x4();
 
-	////vertexResource頂点バッファーを作成する
-	D3D12_VERTEX_BUFFER_VIEW vertexBufferView{ };
-	//リソースの先頭のアドレスから使う
-	vertexBufferView.BufferLocation = vertexResource->GetGPUVirtualAddress();
-	//使用するリソースのサイズは頂点分のサイズ
-	vertexBufferView.SizeInBytes = sizeof(VertexData) * kSubdivision * kSubdivision * 6;
-	//1頂点当たりのサイズ
-	vertexBufferView.StrideInBytes = sizeof(VertexData);
-	//頂点リソースにデータを書き込む
-	VertexData* vertexData = nullptr;
-	//書き込むためのアドレスを取得
-	vertexResource->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
+	//////vertexResource頂点バッファーを作成する
+	//D3D12_VERTEX_BUFFER_VIEW vertexBufferView{ };
+	////リソースの先頭のアドレスから使う
+	//vertexBufferView.BufferLocation = vertexResource->GetGPUVirtualAddress();
+	////使用するリソースのサイズは頂点分のサイズ
+	//vertexBufferView.SizeInBytes = sizeof(VertexData) * kSubdivision * kSubdivision * 6;
+	////1頂点当たりのサイズ
+	//vertexBufferView.StrideInBytes = sizeof(VertexData);
+	////頂点リソースにデータを書き込む
+	//VertexData* vertexData = nullptr;
+	////書き込むためのアドレスを取得
+	//vertexResource->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
 
 #pragma region ModelDataを使う
 	// モデルデータ読み込み
@@ -921,86 +921,86 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	indexDataSprite[0] = 0; indexDataSprite[1] = 1; indexDataSprite[2] = 2;
 	indexDataSprite[3] = 1; indexDataSprite[4] = 3; indexDataSprite[5] = 2;
 
-	//経度分割1つ分の経度φd
-	const float kLonEvery = 2 * std::numbers::pi_v<float> / (float)kSubdivision;
-	//緯度分割１つ分の緯度Θd
-	const float kLatEvery = std::numbers::pi_v<float> / (float)kSubdivision;
-	//緯度方向に分割しながら線を描く
-	const float w = 2.0f;
-	for (uint32_t latIndex = 0; latIndex < kSubdivision; ++latIndex) {
-		float lat = -std::numbers::pi_v<float> / 2.0f + kLatEvery * latIndex;//θ
-		for (uint32_t lonIndex = 0; lonIndex < kSubdivision; ++lonIndex) {
-			//テクスチャ用のTexcood
+	////経度分割1つ分の経度φd
+	//const float kLonEvery = 2 * std::numbers::pi_v<float> / (float)kSubdivision;
+	////緯度分割１つ分の緯度Θd
+	//const float kLatEvery = std::numbers::pi_v<float> / (float)kSubdivision;
+	////緯度方向に分割しながら線を描く
+	//const float w = 2.0f;
+	//for (uint32_t latIndex = 0; latIndex < kSubdivision; ++latIndex) {
+	//	float lat = -std::numbers::pi_v<float> / 2.0f + kLatEvery * latIndex;//θ
+	//	for (uint32_t lonIndex = 0; lonIndex < kSubdivision; ++lonIndex) {
+	//		//テクスチャ用のTexcood
 
-			//書き込む最初の場所
-			uint32_t start = (latIndex * kSubdivision + lonIndex) * 6;
-			float lon = lonIndex * kLonEvery;//∮
-			//基準点a
-			vertexData[start].position.x = std::cosf(lat) * std::cosf(lon);
-			vertexData[start].position.y = std::sinf(lat);
-			vertexData[start].position.z = std::cosf(lat) * std::sinf(lon);
-			vertexData[start].position.w = w;
-			vertexData[start].texcoord = { float(lonIndex) / float(kSubdivision), 1.0f - float(latIndex) / float(kSubdivision) };
-			vertexData[start].normal.x = vertexData[start].position.x;
-			vertexData[start].normal.y = vertexData[start].position.y;
-			vertexData[start].normal.z = vertexData[start].position.z;
+	//		//書き込む最初の場所
+	//		uint32_t start = (latIndex * kSubdivision + lonIndex) * 6;
+	//		float lon = lonIndex * kLonEvery;//∮
+	//		//基準点a
+	//		vertexData[start].position.x = std::cosf(lat) * std::cosf(lon);
+	//		vertexData[start].position.y = std::sinf(lat);
+	//		vertexData[start].position.z = std::cosf(lat) * std::sinf(lon);
+	//		vertexData[start].position.w = w;
+	//		vertexData[start].texcoord = { float(lonIndex) / float(kSubdivision), 1.0f - float(latIndex) / float(kSubdivision) };
+	//		vertexData[start].normal.x = vertexData[start].position.x;
+	//		vertexData[start].normal.y = vertexData[start].position.y;
+	//		vertexData[start].normal.z = vertexData[start].position.z;
 
-			//基準点b
-			start++;
-			vertexData[start].position.x = std::cosf(lat + kLatEvery) * std::cosf(lon);
-			vertexData[start].position.y = std::sinf(lat + kLatEvery);
-			vertexData[start].position.z = std::cosf(lat + kLatEvery) * std::sinf(lon);
-			vertexData[start].position.w = w;
-			vertexData[start].texcoord = { float(lonIndex) / float(kSubdivision), 1.0f - float(latIndex + 1.0f) / float(kSubdivision) };
-			vertexData[start].normal.x = vertexData[start].position.x;
-			vertexData[start].normal.y = vertexData[start].position.y;
-			vertexData[start].normal.z = vertexData[start].position.z;
+	//		//基準点b
+	//		start++;
+	//		vertexData[start].position.x = std::cosf(lat + kLatEvery) * std::cosf(lon);
+	//		vertexData[start].position.y = std::sinf(lat + kLatEvery);
+	//		vertexData[start].position.z = std::cosf(lat + kLatEvery) * std::sinf(lon);
+	//		vertexData[start].position.w = w;
+	//		vertexData[start].texcoord = { float(lonIndex) / float(kSubdivision), 1.0f - float(latIndex + 1.0f) / float(kSubdivision) };
+	//		vertexData[start].normal.x = vertexData[start].position.x;
+	//		vertexData[start].normal.y = vertexData[start].position.y;
+	//		vertexData[start].normal.z = vertexData[start].position.z;
 
-			//基準点c
-			start++;
-			vertexData[start].position.x = std::cosf(lat) * std::cosf(lon + kLonEvery);
-			vertexData[start].position.y = std::sinf(lat);
-			vertexData[start].position.z = std::cosf(lat) * std::sinf(lon + kLonEvery);
-			vertexData[start].position.w = w;
-			vertexData[start].texcoord = { float(lonIndex + 1.0f) / float(kSubdivision), 1.0f - float(latIndex) / float(kSubdivision) };
-			vertexData[start].normal.x = vertexData[start].position.x;
-			vertexData[start].normal.y = vertexData[start].position.y;
-			vertexData[start].normal.z = vertexData[start].position.z;
+	//		//基準点c
+	//		start++;
+	//		vertexData[start].position.x = std::cosf(lat) * std::cosf(lon + kLonEvery);
+	//		vertexData[start].position.y = std::sinf(lat);
+	//		vertexData[start].position.z = std::cosf(lat) * std::sinf(lon + kLonEvery);
+	//		vertexData[start].position.w = w;
+	//		vertexData[start].texcoord = { float(lonIndex + 1.0f) / float(kSubdivision), 1.0f - float(latIndex) / float(kSubdivision) };
+	//		vertexData[start].normal.x = vertexData[start].position.x;
+	//		vertexData[start].normal.y = vertexData[start].position.y;
+	//		vertexData[start].normal.z = vertexData[start].position.z;
 
-			//基準点c
-			start++;
-			vertexData[start].position.x = std::cosf(lat) * std::cosf(lon + kLonEvery);
-			vertexData[start].position.y = std::sinf(lat);
-			vertexData[start].position.z = std::cosf(lat) * std::sinf(lon + kLonEvery);
-			vertexData[start].position.w = w;
-			vertexData[start].texcoord = { float(lonIndex + 1.0f) / float(kSubdivision), 1.0f - float(latIndex) / float(kSubdivision) };
-			vertexData[start].normal.x = vertexData[start].position.x;
-			vertexData[start].normal.y = vertexData[start].position.y;
-			vertexData[start].normal.z = vertexData[start].position.z;
-			
-			//基準点b
-			start++;
-			vertexData[start].position.x = std::cosf(lat + kLatEvery) * std::cosf(lon);
-			vertexData[start].position.y = std::sinf(lat + kLatEvery);
-			vertexData[start].position.z = std::cosf(lat + kLatEvery) * std::sinf(lon);
-			vertexData[start].position.w = w;
-			vertexData[start].texcoord = { float(lonIndex) / float(kSubdivision), 1.0f - float(latIndex + 1.0f) / float(kSubdivision) };
-			vertexData[start].normal.x = vertexData[start].position.x;
-			vertexData[start].normal.y = vertexData[start].position.y;
-			vertexData[start].normal.z = vertexData[start].position.z;
-			
-			//基準点d
-			start++;
-			vertexData[start].position.x = std::cosf(lat + kLatEvery) * std::cosf(lon + kLonEvery);
-			vertexData[start].position.y = std::sinf(lat + kLatEvery);
-			vertexData[start].position.z = std::cosf(lat + kLatEvery) * std::sinf(lon + kLonEvery);
-			vertexData[start].position.w = w;
-			vertexData[start].texcoord = { float(lonIndex + 1) / float(kSubdivision), 1.0f - float(latIndex + 1) / float(kSubdivision) };
-			vertexData[start].normal.x = vertexData[start].position.x;
-			vertexData[start].normal.y = vertexData[start].position.y;
-			vertexData[start].normal.z = vertexData[start].position.z;
-		}
-	}
+	//		//基準点c
+	//		start++;
+	//		vertexData[start].position.x = std::cosf(lat) * std::cosf(lon + kLonEvery);
+	//		vertexData[start].position.y = std::sinf(lat);
+	//		vertexData[start].position.z = std::cosf(lat) * std::sinf(lon + kLonEvery);
+	//		vertexData[start].position.w = w;
+	//		vertexData[start].texcoord = { float(lonIndex + 1.0f) / float(kSubdivision), 1.0f - float(latIndex) / float(kSubdivision) };
+	//		vertexData[start].normal.x = vertexData[start].position.x;
+	//		vertexData[start].normal.y = vertexData[start].position.y;
+	//		vertexData[start].normal.z = vertexData[start].position.z;
+	//		
+	//		//基準点b
+	//		start++;
+	//		vertexData[start].position.x = std::cosf(lat + kLatEvery) * std::cosf(lon);
+	//		vertexData[start].position.y = std::sinf(lat + kLatEvery);
+	//		vertexData[start].position.z = std::cosf(lat + kLatEvery) * std::sinf(lon);
+	//		vertexData[start].position.w = w;
+	//		vertexData[start].texcoord = { float(lonIndex) / float(kSubdivision), 1.0f - float(latIndex + 1.0f) / float(kSubdivision) };
+	//		vertexData[start].normal.x = vertexData[start].position.x;
+	//		vertexData[start].normal.y = vertexData[start].position.y;
+	//		vertexData[start].normal.z = vertexData[start].position.z;
+	//		
+	//		//基準点d
+	//		start++;
+	//		vertexData[start].position.x = std::cosf(lat + kLatEvery) * std::cosf(lon + kLonEvery);
+	//		vertexData[start].position.y = std::sinf(lat + kLatEvery);
+	//		vertexData[start].position.z = std::cosf(lat + kLatEvery) * std::sinf(lon + kLonEvery);
+	//		vertexData[start].position.w = w;
+	//		vertexData[start].texcoord = { float(lonIndex + 1) / float(kSubdivision), 1.0f - float(latIndex + 1) / float(kSubdivision) };
+	//		vertexData[start].normal.x = vertexData[start].position.x;
+	//		vertexData[start].normal.y = vertexData[start].position.y;
+	//		vertexData[start].normal.z = vertexData[start].position.z;
+	//	}
+	//}
 
 
 
@@ -1171,7 +1171,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			if (ImGui::CollapsingHeader("SphereTransform")) {
 				ImGui::ColorEdit4("Text Color With Flags", &materialData->color.x, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_AlphaBar);
 				ImGui::SliderFloat3("Position", &transform.translata.x, -5.0f, 5.0f);// 移動
-				ImGui::SliderFloat3("Rotation", &, -180.0f, 180.0f);// 回転変更
+				ImGui::SliderFloat3("Rotation", &transform.rotate.x, -180.0f, 180.0f);// 回転変更
 				ImGui::SliderFloat3("Scale", &transform.scale.x, 0.1f, 2.0f);// 大きさ変更
 			}
 			if (ImGui::CollapsingHeader("Light")) {
