@@ -342,7 +342,33 @@ D3D12_GPU_DESCRIPTOR_HANDLE GetGPUDescriptorHandle(ID3D12DescriptorHeap* descrpt
 }
 #pragma endregion
 
+#pragma region LoadMaterial関数
+MaterialData LoadMaterialTemplateFile(const std::string& directoryPath, const std::string& filename) {
+	// 1.2.必要な変数の宣言とファイルを開く
+	MaterialData materialData; // 構築するMaterialData
+	std::string line; // ファイルから読んだ1行を格納するもの
+	std::ifstream file(directoryPath + "/" + filename); // ファイルを開く
+	assert(file.is_open()); // とりあえず開けなかったら止める
+	// 3.ファイルを読み、MaterialDataを構築
+	while (std::getline(file,line))
+	{
+		std::string identifier;
+		std::istringstream s(line);
+		s >> identifier;
 
+		// identifierに応じた処理
+		if (identifier == "map_Kd") {
+			std::string textureFilename;
+			s >> textureFilename;
+			// 連結してファイルパスにする
+			materialData.textureFilePath = directoryPath + "/" + textureFilename;
+		}
+	}
+	return materialData;
+}
+#pragma endregion
+
+#pragma region LoadObjFile関数
 ModelData LoadObjFile(const std::string& directoryPath, const std::string& filename) {
 	// 1. 中で必要となる変数の宣言
 	ModelData modelData; // 構築するModalData
@@ -369,6 +395,7 @@ ModelData LoadObjFile(const std::string& directoryPath, const std::string& filen
 		else if (identifier == "vt") {
 			Vector2 texcoord;
 			s >> texcoord.x >> texcoord.y;
+			texcoord.y = 1.0f - texcoord.y;
 			texcoords.push_back(texcoord);
 		}
 		else if (identifier == "vn") {
@@ -404,9 +431,18 @@ ModelData LoadObjFile(const std::string& directoryPath, const std::string& filen
 			modelData.vertices.push_back(triangle[1]);
 			modelData.vertices.push_back(triangle[0]);
 		}
+		else if (identifier == "mtllib") {
+			// mateialTemplateLibraryファイルの名前を取得する
+			std::string materialFilename;
+			s >> materialFilename;
+			// 基本的にobjファイルと同一階層にmtlは存在させるので、ディレクトリ名とファイル名を渡す
+			modelData.material = LoadMaterialTemplateFile(directoryPath, materialFilename);
+		}
 	}
 	return modelData;
 }
+#pragma endregion
+
 
 bool useMonsterBall = true;
 
@@ -1066,8 +1102,17 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	scissorRect.bottom = kClientHeight;
 #pragma endregion
 
+
+#pragma region Texture3を読む
+	DirectX::ScratchImage mipImages3 = LoadTexture("Resources/monsterBall.png");
+	const DirectX::TexMetadata& metadata3 = mipImages3.GetMetadata();
+	ID3D12Resource* textureResources3 = CreateTextureResource(device, metadata3);
+	ID3D12Resource* intermediateResource3 = UploadTextureData(textureResources3, mipImages3, device, commandList);
+#pragma endregion
+
 #pragma region Texture2を読む
-	DirectX::ScratchImage mipImages2 = LoadTexture("Resources/monsterBall.png");
+	//DirectX::ScratchImage mipImages2 = LoadTexture("Resources/uvChecker.png");
+	DirectX::ScratchImage mipImages2 = LoadTexture(modelData.material.textureFilePath);
 	const DirectX::TexMetadata& metadata2 = mipImages2.GetMetadata();
 	ID3D12Resource* textureResources2 = CreateTextureResource(device, metadata2);
 	ID3D12Resource* intermediateResource2 = UploadTextureData(textureResources2, mipImages2, device, commandList);

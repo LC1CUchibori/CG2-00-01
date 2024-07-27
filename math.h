@@ -60,8 +60,13 @@ struct DirectionalLighting {
 	float intensity;
 };
 
+struct MaterialData{
+	std::string textureFilePath;
+};
+
 struct ModelData{
 	std::vector<VertexData> vertices;
+	MaterialData material;
 };
 
 
@@ -311,3 +316,5 @@ Matrix4x4 MakeOrthographicMatrix(float left, float top, float right, float botto
 	result.m[3][3] = 1.0f;
 	return result;
 }
+
+
