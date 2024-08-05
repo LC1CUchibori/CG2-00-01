@@ -171,9 +171,6 @@ IDxcBlob* CompileShader(
 
 	Log(ConvertString(std::format(L"Compile Succeeded, path:{}, profile:{}\n", filePath, profile)));
 
-	shaderSource->Release();
-	shaderResult->Release();
-
 	return shaderBlob;
 }
 #pragma endregion
@@ -465,6 +462,7 @@ bool useMonsterBall = true;
 
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	D3DResourceLeakChecker leakCheck;
+	CoInitializeEx(0, COINIT_MULTITHREADED);
 	Microsoft::WRL::ComPtr<IDXGIFactory7>dxgiFactory;
 	Microsoft::WRL::ComPtr<ID3D12Device> device;
 
@@ -473,7 +471,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	}
 
 
-	CoInitializeEx(0, COINIT_MULTITHREADED);
 
 #pragma region ウィンドウクラスの登録
 	WNDCLASS wc{};
@@ -597,7 +594,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		infoQueue->PushStorageFilter(&filter);
 #pragma endregion
 
-		infoQueue->Release();
 	}
 #endif
 #pragma endregion
@@ -878,7 +874,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	Microsoft::WRL::ComPtr<ID3D12Resource> vertexResourceSprite = CreateBufferResource(device, sizeof(VertexData) * 6);
 #pragma endregion
 
-#pragma region DSV
+#pragma region DSVcomptr
 	D3D12_DEPTH_STENCIL_VIEW_DESC dsvDesc{};
 	dsvDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;//Format
 	dsvDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;//2Dtexture
