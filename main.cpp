@@ -171,9 +171,6 @@ IDxcBlob* CompileShader(
 
 	Log(ConvertString(std::format(L"Compile Succeeded, path:{}, profile:{}\n", filePath, profile)));
 
-	shaderSource->Release();
-	shaderResult->Release();
-
 	return shaderBlob;
 }
 #pragma endregion
@@ -596,7 +593,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		infoQueue->PushStorageFilter(&filter);
 #pragma endregion
 
-		infoQueue->Release();
 	}
 #endif
 #pragma endregion
@@ -1404,6 +1400,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 #pragma region 解放処理
 	
+	ImGui_ImplDX12_Shutdown();
+	ImGui_ImplWin32_Shutdown();
+	ImGui::DestroyContext();
 	CloseWindow(hwnd);
 #pragma endregion
 
