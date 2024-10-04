@@ -947,7 +947,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 #pragma region ModelDataを使う
 	// モデルデータ読み込み
-	ModelData modelData = LoadObjFile("resources", "plane.obj");
+	ModelData modelData = LoadObjFile("resources", "fence.obj");
 	// 頂点リソースを作成
 	Microsoft::WRL::ComPtr<ID3D12Resource> vertexModelResource = CreateBufferResource(device, sizeof(VertexData) * modelData.vertices.size());
 	// 頂点バッファビューを作成する
@@ -1252,7 +1252,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			if (ImGui::CollapsingHeader("SphereTransform")) {
 				ImGui::ColorEdit4("Text Color With Flags", &materialData->color.x, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_AlphaBar);
 				ImGui::SliderFloat3("Position", &transform.translata.x, -5.0f, 5.0f);// 移動
-				ImGui::SliderFloat3("Rotation", &transform.rotate.x, -180.0f, 180.0f);// 回転変更
+				ImGui::SliderFloat3("Rotation", &transform.rotate.x, -10.0f, 10.0f);// 回転変更
 				ImGui::SliderFloat3("Scale", &transform.scale.x, 0.1f, 2.0f);// 大きさ変更
 			}
 			if (ImGui::CollapsingHeader("Light")) {

@@ -31,6 +31,12 @@ PixelShaderOutput main(VertexShaderOutput input)
     float4 transformedUV = mul(float32_t4(input.texcoord,0.0f, 1.0f), gMaterial.uvTransform);
     float32_t4 textureColor = gTexture.Sample(gSample, transformedUV.xy);
     
+    // 透明度が0（完全に透明）ならピクセルを破棄
+    if (textureColor.a <= 0.0f)
+    {
+        discard;
+    }
+    
     //float32_t4 textureColor = gTexture.Sample(gSample, input.texcoord);
     PixelShaderOutput output;
     if (gMaterial.enableLighting != 0)
@@ -43,6 +49,12 @@ PixelShaderOutput main(VertexShaderOutput input)
     else
     {
         output.color = gMaterial.color * textureColor;
+    }
+    
+     // アルファ値が低い場合にピクセルを破棄（例えば、透明度が0.5以下の場合）
+    if (output.color.a <= 0.5f)
+    {
+        discard;
     }
     return output;
 }
