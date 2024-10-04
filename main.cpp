@@ -947,7 +947,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 #pragma region ModelDataを使う
 	// モデルデータ読み込み
-	ModelData modelData = LoadObjFile("resources", "fence.obj");
+	ModelData modelData = LoadObjFile("resources", "plane.obj");
 	// 頂点リソースを作成
 	Microsoft::WRL::ComPtr<ID3D12Resource> vertexModelResource = CreateBufferResource(device, sizeof(VertexData) * modelData.vertices.size());
 	// 頂点バッファビューを作成する
@@ -1267,7 +1267,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				ImGui::SliderAngle("UVRotate", &uvTransformSprite.rotate.z);
 			}
 			if (ImGui::CollapsingHeader("SpriteTransform")) {
-				ImGui::DragFloat2("UVTranslate", &transformSprite.translata.x, -5.0f,5.0f);
+				ImGui::DragFloat2("UVTranslate", &transformSprite.translata.x, -5.0f, 5.0f);
 				ImGui::DragFloat2("UVScale", &transformSprite.scale.x, 0.01f, -10.0f, 10.0f);
 				ImGui::SliderAngle("UVRotate", &transformSprite.rotate.z);
 			}
@@ -1287,7 +1287,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 #pragma region コマンドを積み込み確定させる
 			UINT backBufferIndex = swapChain->GetCurrentBackBufferIndex();
-			
+
 #pragma region TransitionBarrierを貼る
 			D3D12_RESOURCE_BARRIER barrier{};
 
@@ -1336,11 +1336,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			//wvp用のCBufferの場所を設定
 			commandList->SetGraphicsRootConstantBufferView(1, transformationMatrixResource->GetGPUVirtualAddress());
 			commandList->SetGraphicsRootDescriptorTable(2, useMonsterBall ? textureSrvHandleGPU2 : textureSrvHandleGPU);
-			commandList->SetGraphicsRootConstantBufferView(3, directionalLightSprite->GetGPUVirtualAddress());
-			//描画！
-			//commandList->DrawInstanced(kSubdivision * kSubdivision * 6, 1, 0, 0);
-			// ModelDataの描画
-			commandList->DrawInstanced(UINT(modelData.vertices.size()), 1, 0, 0);
+			for (int i = 0; i <= 10; i++) {
+				commandList->SetGraphicsRootConstantBufferView(3, directionalLightSprite->GetGPUVirtualAddress());
+				//描画！
+				//commandList->DrawInstanced(kSubdivision * kSubdivision * 6, 1, 0, 0);
+				// ModelDataの描画
+				commandList->DrawInstanced(UINT(modelData.vertices.size()),10, 0, 0);
+			}
 #pragma endregion
 
 			commandList->IASetIndexBuffer(&indexBufferViewSprite);
