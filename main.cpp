@@ -507,13 +507,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	);
 #pragma endregion
 
-	Input* input_ = nullptr;
+	
 
-	input_ = new Input();
-	input_->Initialize(wc.hInstance,hwnd);
-	input_->Update();
-
-	delete input_;
+	//delete input_;
 
 
 #ifdef _DEBUG
@@ -1207,13 +1203,23 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		srvDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
 
 
+	Input* input_ = nullptr;
+
+	input_ = new Input();
+	input_->Initialize(wc.hInstance,hwnd);
+
+
 #pragma endregion
 
 
-	//// 数字の0キーが押されていたら
-	//if (key[DIK_0]) {
-	//	OutputDebugStringA("Hit 0\n");
-	//}
+	// 座標操作
+	if (input_->PushKey(DIK_UP) || input_->PushKey(DIK_DOWN) || input_->PushKey(DIK_RIGHT) || input_->PushKey(DIK_LEFT)) 
+	{
+		if (input_->PushKey(DIK_UP)) {transform.translata.x += 1.0f; }
+		else if (input_->PushKey(DIK_DOWN)) {transform.translata.y -= 1.0f; }
+		if (input_->PushKey(DIK_RIGHT)) { transform.translata.x += 1.0f; }
+		else if (input_->PushKey(DIK_LEFT)) { transform.translata.y -= 1.0f; }
+	}
 
 
 	while (msg.message != WM_QUIT) {
@@ -1254,7 +1260,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			Matrix4x4 viewMatrixModel = Inverse(cameraMatrixModel);
 			Matrix4x4 projectionMatrixModel = MakePerspectiveFovMatrix(0.45f, 1280.0f / 720.0f, 0.1f, 100.0f);
 			Matrix4x4 worldProjectionMatrixModel = Multiply(worldMatrixModel, Multiply(viewMatrixModel, projectionMatrixModel));*/
-
+			input_->Update();
 			ImGui_ImplDX12_NewFrame();
 			ImGui_ImplWin32_NewFrame();
 			ImGui::NewFrame();
@@ -1418,6 +1424,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	ImGui_ImplWin32_Shutdown();
 	ImGui::DestroyContext();
 	CloseWindow(hwnd);
+	delete input_;
 #pragma endregion
 
 

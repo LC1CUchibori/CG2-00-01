@@ -9,6 +9,7 @@ class Input
 {
 public: // メンバ関数
 	template<class T> using ComPtr = Microsoft::WRL::ComPtr<T>;
+	ComPtr<IDirectInput8> directInput;
 public:
     // 初期化
 	void Initialize(HINSTANCE hInstance,HWND hwnd);
