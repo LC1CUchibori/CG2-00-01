@@ -15,6 +15,7 @@
 #include <sstream>
 #include "math.h"
 #include <wrl.h>
+#include "Input.h"
 
 #include "externals/imgui/imgui.h"
 #include "externals/imgui/imgui_impl_dx12.h"
@@ -470,8 +471,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	if (SUCCEEDED(DXGIGetDebugInterface1(0, IID_PPV_ARGS(&debug)))) {
 	}
 
-
-
 #pragma region ウィンドウクラスの登録
 	WNDCLASS wc{};
 
@@ -507,6 +506,15 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		nullptr
 	);
 #pragma endregion
+
+	Input* input_ = nullptr;
+
+	input_ = new Input();
+	input_->Initialize(wc.hInstance,hwnd);
+	input_->Update();
+
+	delete input_;
+
 
 #ifdef _DEBUG
 
@@ -708,6 +716,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	hr = dxcUtils->CreateDefaultIncludeHandler(&includeHandler);
 	assert(SUCCEEDED(hr));
 #pragma endregion
+
+
 
 #pragma region RootSignatureを生成
 	D3D12_ROOT_SIGNATURE_DESC descriptionRootSignature{};
@@ -1196,7 +1206,15 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		srvDescriptorHeap->GetCPUDescriptorHandleForHeapStart(),
 		srvDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
 
+
 #pragma endregion
+
+
+	//// 数字の0キーが押されていたら
+	//if (key[DIK_0]) {
+	//	OutputDebugStringA("Hit 0\n");
+	//}
+
 
 	while (msg.message != WM_QUIT) {
 		if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
