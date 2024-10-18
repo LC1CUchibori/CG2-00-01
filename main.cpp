@@ -1388,13 +1388,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			commandList->SetGraphicsRootConstantBufferView(1, transformationMatrixResource->GetGPUVirtualAddress());
 			commandList->SetGraphicsRootDescriptorTable(2, useMonsterBall ? textureSrvHandleGPU2 : textureSrvHandleGPU);
 
-			commandList->SetGraphicsRootDescriptorTable(1, instancingSrvHandleGPU);
 
 			for (int i = 0; i <= 10; i++) {
 				commandList->SetGraphicsRootConstantBufferView(3, directionalLightSprite->GetGPUVirtualAddress());
 				//描画！
 				//commandList->DrawInstanced(kSubdivision * kSubdivision * 6, 1, 0, 0);
-				// ModelDataの描画
+				// ModelDataの
+
+				commandList->SetGraphicsRootDescriptorTable(1, instancingSrvHandleGPU);
 				commandList->DrawInstanced(UINT(modelData.vertices.size()),kNumInstance, 0, 0);
 			}
 #pragma endregion
