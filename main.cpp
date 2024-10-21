@@ -1212,20 +1212,19 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 #pragma endregion
 
 
-	// 座標操作
-	if (input_->PushKey(DIK_UP) || input_->PushKey(DIK_DOWN) || input_->PushKey(DIK_RIGHT) || input_->PushKey(DIK_LEFT)) 
-	{
-		if (input_->PushKey(DIK_UP)) {transform.translata.x += 1.0f; }
-		else if (input_->PushKey(DIK_DOWN)) {transform.translata.y -= 1.0f; }
-		if (input_->PushKey(DIK_RIGHT)) { transform.translata.x += 1.0f; }
-		else if (input_->PushKey(DIK_LEFT)) { transform.translata.y -= 1.0f; }
-	}
-
-
 	while (msg.message != WM_QUIT) {
+		input_->Update();
 		if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
 			TranslateMessage(&msg);
 			DispatchMessage(&msg);
+		}
+		// 座標操作
+		if (input_->PushKey(DIK_UP) || input_->PushKey(DIK_DOWN) || input_->PushKey(DIK_RIGHT) || input_->PushKey(DIK_LEFT)) 
+		{
+			if (input_->PushKey(DIK_UP)) {transform.translata.y += 10.0f; }
+			else if (input_->PushKey(DIK_DOWN)) {transform.translata.y -= 10.0f; }
+			if (input_->PushKey(DIK_RIGHT)) { transform.translata.x += 10.0f; }
+			else if (input_->PushKey(DIK_LEFT)) { transform.translata.x -= 10.0f; }
 		}
 		else {
 			//ゲームの処理
