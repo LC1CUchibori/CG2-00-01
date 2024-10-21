@@ -49,9 +49,9 @@ Microsoft::WRL::ComPtr<ID3D12Resource> CreateBufferResource(Microsoft::WRL::ComP
 
 	Microsoft::WRL::ComPtr<ID3D12Resource> vertexResource = nullptr;
 	HRESULT hr = device->CreateCommittedResource(
-		&uploadHeapProperties, 
+		&uploadHeapProperties,
 		D3D12_HEAP_FLAG_NONE,
-		&vertexResourceDesc, 
+		&vertexResourceDesc,
 		D3D12_RESOURCE_STATE_GENERIC_READ,
 		nullptr,
 		IID_PPV_ARGS(&vertexResource));
@@ -351,7 +351,7 @@ D3D12_CPU_DESCRIPTOR_HANDLE GetCPUDescriptorHandle(Microsoft::WRL::ComPtr<ID3D12
 D3D12_GPU_DESCRIPTOR_HANDLE GetGPUDescriptorHandle(Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> descrptorHeap, uint32_t descriptorSize, uint32_t index)
 {
 	D3D12_GPU_DESCRIPTOR_HANDLE handleGPU = descrptorHeap->GetGPUDescriptorHandleForHeapStart();
-	handleGPU.ptr+=(descriptorSize * index);
+	handleGPU.ptr += (descriptorSize * index);
 	return handleGPU;
 }
 #pragma endregion
@@ -364,7 +364,7 @@ MaterialData LoadMaterialTemplateFile(const std::string& directoryPath, const st
 	std::ifstream file(directoryPath + "/" + filename); // ファイルを開く
 	assert(file.is_open()); // とりあえず開けなかったら止める
 	// 3.ファイルを読み、MaterialDataを構築
-	while (std::getline(file,line))
+	while (std::getline(file, line))
 	{
 		std::string identifier;
 		std::istringstream s(line);
@@ -438,7 +438,7 @@ ModelData LoadObjFile(const std::string& directoryPath, const std::string& filen
 				Vector3 normal = normals[elementIndeices[2] - 1];
 				VertexData vertex = { position,texcoord,normal };
 				modelData.vertices.push_back(vertex);
-				triangle[faceVertex] = { position,texcoord,normal};
+				triangle[faceVertex] = { position,texcoord,normal };
 			}
 			// 頂点を逆順で登録することで、回り順を逆にする
 			modelData.vertices.push_back(triangle[2]);
@@ -507,7 +507,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	);
 #pragma endregion
 
-	
+
 
 	//delete input_;
 
@@ -822,8 +822,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	IDxcBlob* pixelShaderBlob = CompileShader(L"Resources/shaders/Object3d.PS.hlsl",
 		L"ps_6_0", dxcUtils, dxcCompiler, includeHandler)
-		
-;
+
+		;
 	assert(pixelShaderBlob != nullptr);
 #pragma endregion
 
@@ -923,7 +923,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 #pragma region Sprite用のリソース
 	// Sprite用のマテリアルリソースを作る
 	Microsoft::WRL::ComPtr<ID3D12Resource> materialResourceSprite = CreateBufferResource(device, sizeof(Material));
-    Material* materialDataSprite = nullptr;
+	Material* materialDataSprite = nullptr;
 	materialResourceSprite->Map(0, nullptr, reinterpret_cast<void**>(&materialDataSprite));
 	materialDataSprite->color = { Vector4(1.0f, 1.0f, 1.0f, 1.0f) };
 	materialDataSprite->enableLighting = false;
@@ -961,7 +961,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	std::memcpy(vertexData, modelData.vertices.data(), sizeof(VertexData) * modelData.vertices.size()); // 頂点データをリソースにコピー
 
 #pragma endregion
-	
+
 
 #pragma region 平行光源をShderで使う
 	Microsoft::WRL::ComPtr<ID3D12Resource> directionalLightSprite = CreateBufferResource(device, sizeof(DirectionalLighting));
@@ -1206,27 +1206,36 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	Input* input_ = nullptr;
 
 	input_ = new Input();
-	input_->Initialize(wc.hInstance,hwnd);
+	input_->Initialize(wc.hInstance, hwnd);
 
 
 #pragma endregion
 
 
 	while (msg.message != WM_QUIT) {
-		input_->Update();
 		if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
 			TranslateMessage(&msg);
 			DispatchMessage(&msg);
 		}
-		// 座標操作
-		if (input_->PushKey(DIK_UP) || input_->PushKey(DIK_DOWN) || input_->PushKey(DIK_RIGHT) || input_->PushKey(DIK_LEFT)) 
-		{
-			if (input_->PushKey(DIK_UP)) {transform.translata.y += 10.0f; }
-			else if (input_->PushKey(DIK_DOWN)) {transform.translata.y -= 10.0f; }
-			if (input_->PushKey(DIK_RIGHT)) { transform.translata.x += 10.0f; }
-			else if (input_->PushKey(DIK_LEFT)) { transform.translata.x -= 10.0f; }
-		}
 		else {
+			input_->Update();
+			// 座標操作
+			if (input_->PushKey(DIK_UP) || input_->PushKey(DIK_DOWN) || input_->PushKey(DIK_RIGHT) || input_->PushKey(DIK_LEFT))
+			{
+				if (input_->PushKey(DIK_UP)) {
+					transformSprite.translata.y += 1.0f;
+				}
+				else if (input_->PushKey(DIK_DOWN)) {
+					transformSprite.translata.y -= 1.0f;
+				}
+				if (input_->PushKey(DIK_RIGHT)) {
+					transformSprite.translata.x += 1.0f;
+				}
+				else if (input_->PushKey(DIK_LEFT)) {
+					transformSprite.translata.x -= 1.0f;
+				}
+			}
+
 			//ゲームの処理
 #pragma region Transformを使ってCBufferを更新する
 			//transform.rotate.y += 0.03f;
@@ -1298,7 +1307,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 #pragma region コマンドを積み込み確定させる
 			UINT backBufferIndex = swapChain->GetCurrentBackBufferIndex();
-			
+
 #pragma region TransitionBarrierを貼る
 			D3D12_RESOURCE_BARRIER barrier{};
 
@@ -1418,7 +1427,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	std::string str1{ std::to_string(10) };
 
 #pragma region 解放処理
-	
+
 	ImGui_ImplDX12_Shutdown();
 	ImGui_ImplWin32_Shutdown();
 	ImGui::DestroyContext();
