@@ -514,8 +514,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	input_->Initialize(wc.hInstance,hwnd);
 	input_->Update();
 
-	delete input_;
-
 
 #ifdef _DEBUG
 
@@ -1414,6 +1412,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	std::string str1{ std::to_string(10) };
 
 #pragma region 解放処理
+	delete input_;
 	
 	ImGui_ImplDX12_Shutdown();
 	ImGui_ImplWin32_Shutdown();
