@@ -1396,7 +1396,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				// ModelDataの
 
 				commandList->SetGraphicsRootDescriptorTable(1, instancingSrvHandleGPU);
-				commandList->DrawInstanced(UINT(modelData.vertices.size()),kNumInstance, 0, 0);
 #pragma endregion
 
 			commandList->IASetIndexBuffer(&indexBufferViewSprite);
@@ -1413,6 +1412,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 			commandList->SetGraphicsRootConstantBufferView(0, materialResourceSprite->GetGPUVirtualAddress());
 			//描画！
+			commandList->DrawInstanced(UINT(modelData.vertices.size()), kNumInstance, 0, 0);
 			//commandList->DrawInstanced(6, 1, 0, 0);
 #pragma endregion
 
