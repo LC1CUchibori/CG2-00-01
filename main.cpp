@@ -16,6 +16,7 @@
 #include "math.h"
 #include <wrl.h>
 #include "Input.h"
+#include "WinApp.h"
 
 #include "externals/imgui/imgui.h"
 #include "externals/imgui/imgui_impl_dx12.h"
@@ -463,7 +464,6 @@ bool useMonsterBall = true;
 
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	D3DResourceLeakChecker leakCheck;
-	CoInitializeEx(0, COINIT_MULTITHREADED);
 	Microsoft::WRL::ComPtr<IDXGIFactory7>dxgiFactory;
 	Microsoft::WRL::ComPtr<ID3D12Device> device;
 
@@ -471,44 +471,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	if (SUCCEEDED(DXGIGetDebugInterface1(0, IID_PPV_ARGS(&debug)))) {
 	}
 
-#pragma region ウィンドウクラスの登録
-	WNDCLASS wc{};
-
-	wc.lpfnWndProc = WindowProc;
-	wc.lpszClassName = L"CG2WindowClass";
-	wc.hInstance = GetModuleHandle(nullptr);
-	wc.hCursor = LoadCursor(nullptr, IDC_ARROW);
-
-	RegisterClass(&wc);
-#pragma endregion
-
-#pragma region ウィンドウサイズを決める
-	const int32_t kClientWidth = 1280;
-	const int32_t kClientHeight = 720;
-
-	RECT wrc = { 0,0,kClientWidth,kClientHeight };
-
-	AdjustWindowRect(&wrc, WS_OVERLAPPEDWINDOW, false);
-#pragma endregion
-
-#pragma region ウィンドウ生成と表示
-	HWND hwnd = CreateWindow(
-		wc.lpszClassName,
-		L"CG2",
-		WS_OVERLAPPEDWINDOW,
-		CW_USEDEFAULT,
-		CW_USEDEFAULT,
-		wrc.right - wrc.left,
-		wrc.bottom - wrc.top,
-		nullptr,
-		nullptr,
-		wc.hInstance,
-		nullptr
-	);
-#pragma endregion
 
 
 
+	
 	//delete input_;
 
 
@@ -1187,7 +1153,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	//ウィンドウのｘボタンが押されるまでループ
 	MSG msg{};
-	ShowWindow(hwnd, SW_SHOW);
 
 #pragma region imGuiの初期化
 	// ImGuiの初期化。詳細はとても重要ではないので解説は省略する。
@@ -1204,9 +1169,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 
 	Input* input_ = nullptr;
+	WinApp* winApp = nullptr;
 
 	input_ = new Input();
 	input_->Initialize(wc.hInstance, hwnd);
+	winApp = new WinApp();
+	winApp->Initialize();
 
 
 #pragma endregion
@@ -1449,6 +1417,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	ImGui::DestroyContext();
 	CloseWindow(hwnd);
 	delete input_;
+	delete winApp;
 #pragma endregion
 
 
