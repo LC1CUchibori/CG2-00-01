@@ -9,7 +9,6 @@ class Input
 {
 public: // メンバ関数
 	template<class T> using ComPtr = Microsoft::WRL::ComPtr<T>;
-	ComPtr<IDirectInput8> directInput;
 public:
     // 初期化
 	void Initialize(HINSTANCE hInstance,HWND hwnd);
@@ -22,6 +21,7 @@ public:
 private: // メンバ変数
 // キーボードのデバイス
 	ComPtr<IDirectInputDevice8> keyboard;
+	ComPtr<IDirectInput8> directInput;
 
 	BYTE key[256] = {};
 	BYTE keyPre[256] = {};
