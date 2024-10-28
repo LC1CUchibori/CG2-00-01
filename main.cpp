@@ -558,7 +558,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	WinApp* winApp = nullptr;
 
 	input_ = new Input();
-	input_->Initialize(winApp->GetHInstance(),winApp->GetHwnd());
+	input_->Initialize(winApp);
 	winApp = new WinApp();
 	winApp->Initialize();
 
