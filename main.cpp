@@ -1223,15 +1223,31 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			if (input_->PushKey(DIK_UP) || input_->PushKey(DIK_DOWN) || input_->PushKey(DIK_RIGHT) || input_->PushKey(DIK_LEFT))
 			{
 				if (input_->PushKey(DIK_UP)) {
-					transformSprite.translata.y += 1.0f;
+					transformSprite.translata.y -= 1.0f;
 				}
 				else if (input_->PushKey(DIK_DOWN)) {
-					transformSprite.translata.y -= 1.0f;
+					transformSprite.translata.y += 1.0f;
 				}
 				if (input_->PushKey(DIK_RIGHT)) {
 					transformSprite.translata.x += 1.0f;
 				}
 				else if (input_->PushKey(DIK_LEFT)) {
+					transformSprite.translata.x -= 1.0f;
+				}
+			}
+
+			if (input_->TriggerKey(DIK_UP) || input_->TriggerKey(DIK_DOWN) || input_->TriggerKey(DIK_RIGHT) || input_->TriggerKey(DIK_LEFT))
+			{
+				if (input_->TriggerKey(DIK_UP)) {
+					transformSprite.translata.y -= 1.0f;
+				}
+				else if (input_->TriggerKey(DIK_DOWN)) {
+					transformSprite.translata.y += 1.0f;
+				}
+				if (input_->TriggerKey(DIK_RIGHT)) {
+					transformSprite.translata.x += 1.0f;
+				}
+				else if (input_->TriggerKey(DIK_LEFT)) {
 					transformSprite.translata.x -= 1.0f;
 				}
 			}
