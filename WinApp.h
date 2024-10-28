@@ -1,6 +1,7 @@
 #pragma once
 #include <wtypes.h>
 #include <Windows.h>
+#include <cstdint>
 #include "externals/imgui/imgui.h"
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
@@ -35,17 +36,17 @@ private:
 	WNDCLASS wc{};
 };
 
-#pragma region ウィンドウプロシージャ
-LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
-	if (ImGui_ImplWin32_WndProcHandler(hwnd, msg, wparam, lparam)) {
-		return true;
-	}
-	switch (msg) {
-	case WM_DESTROY:
-		PostQuitMessage(0);
-		return 0;
-	}
-	return DefWindowProc(hwnd, msg, wparam, lparam);
-}
-#pragma endregion
+//#pragma region ウィンドウプロシージャ
+//LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
+//	if (ImGui_ImplWin32_WndProcHandler(hwnd, msg, wparam, lparam)) {
+//		return true;
+//	}
+//	switch (msg) {
+//	case WM_DESTROY:
+//		PostQuitMessage(0);
+//		return 0;
+//	}
+//	return DefWindowProc(hwnd, msg, wparam, lparam);
+//}
+//#pragma endregion
 

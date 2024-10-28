@@ -1,8 +1,8 @@
 #pragma once
 
+#define DIRECTINPUT_VERSION  0x0800
 #include <dinput.h>
 #include <wrl.h>
-#define DIRECTINPUT_VERSION  0x0800
 
 // 入力
 class Input
@@ -21,6 +21,7 @@ public:
 private: // メンバ変数
 // キーボードのデバイス
 	ComPtr<IDirectInputDevice8> keyboard;
+
 	ComPtr<IDirectInput8> directInput;
 
 	BYTE key[256] = {};
