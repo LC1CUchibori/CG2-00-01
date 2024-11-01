@@ -15,6 +15,7 @@
 #include <sstream>
 #include "math.h"
 #include <wrl.h>
+#include <random>
 
 #include "externals/imgui/imgui.h"
 #include "externals/imgui/imgui_impl_dx12.h"
@@ -178,6 +179,7 @@ IDxcBlob* CompileShader(
 }
 #pragma endregion
 
+
 #pragma region Transform変数
 Transform transform{ {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f},{0.0f,0.0f,0.0f } };
 #pragma endregion
@@ -202,6 +204,12 @@ Transform modelTrasform
 	{1.0f,1.0f,1.0f},
 	{1.0f,1.0f,1.0f},
 	{1.0f,1.0f,1.0f},
+};
+
+struct Particle
+{
+	Transform transform;
+	Vector3 velocity;
 };
 
 #pragma region DescriptorHeapの作成関数
@@ -444,6 +452,8 @@ ModelData LoadObjFile(const std::string& directoryPath, const std::string& filen
 }
 #pragma endregion
 
+std::random_device seedGenerator;
+std::mt19937 randomEngine(seedGenerator());
 
 bool useMonsterBall = true;
 
@@ -1008,11 +1018,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	}
 
 	// Transformの初期化
-	Transform transforms[kNumInstance];
+	Particle particles[kNumInstance];
 	for (uint32_t index = 0; index < kNumInstance; ++index) {
-		transforms[index].scale = { 1.0f,1.0f,1.0f };
-		transforms[index].rotate = { 0.0f,0.0f,0.0f };
-		transforms[index].translata = { index * 0.1f,index * 0.1f,index * 0.1f };
+		particles[index].transform.scale = { 1.0f,1.0f,1.0f };
+		particles[index].transform.rotate = { 0.0f,0.0f,0.0f };
+		particles[index].transform.translata = { index * 0.1f,index * 0.1f,index * 0.1f };
 	}
 
 
@@ -1228,7 +1238,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	D3D12_GPU_DESCRIPTOR_HANDLE instancingSrvHandleGPU = GetGPUDescriptorHandle(srvDescriptorHeap, descriptorSizeSRV, 3);
 	device->CreateShaderResourceView(instancingResource.Get(), &instancingSrvDesc, instancingSrvHandleCPU);
 
-
 	//ウィンドウのｘボタンが押されるまでループ
 	MSG msg{};
 	ShowWindow(hwnd, SW_SHOW);
@@ -1267,12 +1276,21 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 #pragma endregion
 
 			for (uint32_t index = 0; index < kNumInstance; ++index) {
-				Matrix4x4 worldMatrix = MakeAffineMatrix(transforms[index].scale, transforms[index].rotate, transforms[index].translata);
+				Matrix4x4 worldMatrix = MakeAffineMatrix(particles[index].transform.scale, particles[index].transform.rotate, particles[index].transform.translata);
 				Matrix4x4 viewProjectionMatrix = Multiply(viewMatrix, projectionMatrix);
 				Matrix4x4 worldViewProjectionMatrix = Multiply(worldMatrix,viewProjectionMatrix );
 				instancigData[index].WVP = worldViewProjectionMatrix;
 				instancigData[index].World = worldMatrix;
+				particles[index].velocity = { 0.0f,1.0f,0.0f};
+				const float kDeltaTime = 1.0f / 60.0f;
+				particles[index].transform.translata += particles[index].velocity * kDeltaTime;
+			
+				std::uniform_real_distribution<float> distribution(-1.0f, 1.0f);
+				// 位置と速度を[-1,1]でランダム初期化
+				particles[index].transform.translata = { distribution(randomEngine),distribution(randomEngine),distribution(randomEngine) };
+				particles[index].velocity = { distribution(randomEngine),distribution(randomEngine),distribution(randomEngine) };
 			}
+
 
 #pragma region WVPMatrixを作って書き込む
 			Matrix4x4 worldMatrixSprite = MakeAffineMatrix(transformSprite.scale, transformSprite.rotate, transformSprite.translata);
