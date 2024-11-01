@@ -1285,6 +1285,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				const float kDeltaTime = 1.0f / 60.0f;
 				particles[index].transform.translata += particles[index].velocity * kDeltaTime;
 			
+
 				std::uniform_real_distribution<float> distribution(-1.0f, 1.0f);
 				// 位置と速度を[-1,1]でランダム初期化
 				particles[index].transform.translata = { distribution(randomEngine),distribution(randomEngine),distribution(randomEngine) };
