@@ -2,7 +2,15 @@
 
 LRESULT WinApp::WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
-	return LRESULT();
+	if (ImGui_ImplWin32_WndProcHandler(hwnd, msg, wparam, lparam)) {
+		return true;
+	}
+	switch (msg) {
+	case WM_DESTROY:
+		PostQuitMessage(0);
+		return 0;
+	}
+	return DefWindowProc(hwnd, msg, wparam, lparam);
 }
 
 void WinApp::Initialize()
@@ -49,4 +57,10 @@ void WinApp::Initialize()
 
 void WinApp::Update()
 {
+}
+
+void WinApp::Finalize()
+{
+	CloseWindow(hwnd);
+	CoUninitialize();
 }

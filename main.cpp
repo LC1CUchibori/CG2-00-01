@@ -557,10 +557,10 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	Input* input_ = nullptr;
 	WinApp* winApp = nullptr;
 
-	input_ = new Input();
-	input_->Initialize(winApp);
 	winApp = new WinApp();
 	winApp->Initialize();
+	input_ = new Input();
+	input_->Initialize(winApp);
 
 #pragma region コマンドキューの生成
 	Microsoft::WRL::ComPtr<ID3D12CommandQueue> commandQueue = nullptr;
@@ -1402,13 +1402,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	ImGui_ImplDX12_Shutdown();
 	ImGui_ImplWin32_Shutdown();
 	ImGui::DestroyContext();
-	CloseWindow(winApp->GetHwnd());
+
+	winApp->Finalize();
+
 	delete input_;
 	delete winApp;
 #pragma endregion
 
 
-	CoUninitialize();
 
 	return 0;
 }
