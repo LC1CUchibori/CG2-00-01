@@ -23,7 +23,6 @@ public: // メンバ関数
 	void DepthBufferGenerate();
 
 
-
 private:
 	// DirectX12デバイス
 	Microsoft::WRL::ComPtr<ID3D12Device> device;
