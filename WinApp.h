@@ -21,6 +21,8 @@ public: // メンバ関数
 	// 終了
 	void Finalize();
 
+	bool ProcessMessage();
+
 public:
 
 	static const int32_t kClientWidth = 1280;
@@ -37,18 +39,4 @@ private:
 	// ウィンドウクラスの設定
 	WNDCLASS wc{};
 };
-
-//#pragma region ウィンドウプロシージャ
-//LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam) {
-//	if (ImGui_ImplWin32_WndProcHandler(hwnd, msg, wparam, lparam)) {
-//		return true;
-//	}
-//	switch (msg) {
-//	case WM_DESTROY:
-//		PostQuitMessage(0);
-//		return 0;
-//	}
-//	return DefWindowProc(hwnd, msg, wparam, lparam);
-//}
-//#pragma endregion
 
