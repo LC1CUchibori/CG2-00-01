@@ -512,7 +512,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	input_ = new Input();
 	input_->Initialize(wc.hInstance,hwnd);
-	input_->Update();
+	
 
 
 #ifdef _DEBUG
@@ -1216,6 +1216,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 
 	while (msg.message != WM_QUIT) {
+
+		input_->Update();
 		if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
 			TranslateMessage(&msg);
 			DispatchMessage(&msg);
