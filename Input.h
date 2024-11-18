@@ -2,7 +2,7 @@
 
 #include <dinput.h>
 #include <wrl.h>
-#define DIRECTINPUT_VERSION  0x0800
+//#define DIRECTINPUT_VERSION  0x0800
 
 // 入力
 class Input
