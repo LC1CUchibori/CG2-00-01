@@ -1044,6 +1044,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	Particle particles[kNumInstance];
 	for (uint32_t index = 0; index < kNumInstance; ++index) {
 		particles[index] = MakeNewParticle(randomEngine);
+
+		std::uniform_real_distribution<float> distribution(-1.0f, 1.0f);
+		// 位置と速度を[-1,1]でランダム初期化
+		particles[index].transform.translata = { distribution(randomEngine),distribution(randomEngine),distribution(randomEngine) };
+		particles[index].velocity = { distribution(randomEngine),distribution(randomEngine),distribution(randomEngine) };
 	}
 
 
@@ -1298,21 +1303,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 #pragma endregion
 
 			for (uint32_t index = 0; index < kNumInstance; ++index) {
+				const float kDeltaTime = 1.0f / 60.0f;
+				particles[index].transform.translata += particles[index].velocity * kDeltaTime;
 				Matrix4x4 worldMatrix = MakeAffineMatrix(particles[index].transform.scale, particles[index].transform.rotate, particles[index].transform.translata);
 				Matrix4x4 viewProjectionMatrix = Multiply(viewMatrix, projectionMatrix);
 				Matrix4x4 worldViewProjectionMatrix = Multiply(worldMatrix,viewProjectionMatrix );
 				instancingData[index].WVP = worldViewProjectionMatrix;
 				instancingData[index].World = worldMatrix;
 				instancingData[index].color = particles[index].color;
-				particles[index].velocity = { 0.0f,1.0f,0.0f};
-				const float kDeltaTime = 1.0f / 60.0f;
-				particles[index].transform.translata += particles[index].velocity * kDeltaTime;
-			
-
-				std::uniform_real_distribution<float> distribution(-1.0f, 1.0f);
-				// 位置と速度を[-1,1]でランダム初期化
-				particles[index].transform.translata = { distribution(randomEngine),distribution(randomEngine),distribution(randomEngine) };
-				particles[index].velocity = { distribution(randomEngine),distribution(randomEngine),distribution(randomEngine) };
 			}
 
 
