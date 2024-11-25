@@ -6,11 +6,20 @@
 #include "Logger.h"
 #include "StringUtility.h"
 #include "WinApp.h"
+#include <array>
+
+#include <cassert>
+#include <dxcapi.h>
+
+#include "externals/imgui/imgui_impl_win32.h"
+#include "externals/imgui/imgui_impl_dx12.h"
 
 // DirectX基盤
 class DirectXCommon
 {
 public: // メンバ関数
+	//DirectXCommon(){};
+
 	// 初期化
 	void Initialize(WinApp*winApp);
 	// デバイスの初期化
@@ -25,6 +34,89 @@ public: // メンバ関数
 	void DescriptorGenerate();
 	// RTVの初期化
 	void RTVInitialize();
+	// 深度ステンシルビューの初期化
+	void DSVInitialize();
+	// フェンス生成
+	void FenceInitialize();
+	// ビューポート矩形の初期化
+	void ViewPortIntialize();
+	// シザリング矩形の初期化
+	void ScissourInitialize();
+	// DXCコンパイラの生成
+	void DXCCompilerGenerate();
+	// ImGuiの初期化
+	void ImGuiInitialize();
+
+	ID3D12Device* GetDevice() { return device.Get(); }
+
+private:
+
+	uint32_t descriptorSizeSRV;
+	uint32_t descriptorSizeRTV;
+	uint32_t descriptorSizeDSV;
+
+	// DirectX12デバイス
+	Microsoft::WRL::ComPtr<ID3D12Device> device;
+	// DXGIファクトリ
+	Microsoft::WRL::ComPtr<IDXGIFactory7> dxgiFactory;
+	// infoQueue
+	Microsoft::WRL::ComPtr<ID3D12InfoQueue>infoQueue;
+	// CommandQueue
+	Microsoft::WRL::ComPtr<ID3D12CommandQueue> commandQueue;
+	D3D12_COMMAND_QUEUE_DESC commandQueueDesc{};
+	// CommandAllocator
+	Microsoft::WRL::ComPtr<ID3D12CommandAllocator> commandAllocator;
+	// CommandList
+	Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> commandList;
+	// SwapChain
+	Microsoft::WRL::ComPtr<IDXGISwapChain4> swapChain;
+	// SwapChainResources
+	//Microsoft::WRL::ComPtr<ID3D12Resource> swapChainResources[2];
+	// rtvDescriptorHeap
+	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> rtvDescriptorHeap;
+	// srvDescriptorHeap
+	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> srvDescriptorHeap;
+	// dsvDescriptorHeap
+	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> dsvDescriptorHeap;
+	// depthStencilResourece
+	Microsoft::WRL::ComPtr<ID3D12Resource> depthStencilResource;
+	// fence
+	Microsoft::WRL::ComPtr<ID3D12Fence> fence;
+
+	Microsoft::WRL::ComPtr <IDXGIAdapter4> useAdapter;
+
+	Microsoft::WRL::ComPtr<ID3D12Debug1> debugController;
+
+	DXGI_SWAP_CHAIN_DESC1 swapChainDesc{};
+
+	D3D12_RENDER_TARGET_VIEW_DESC rtvDesc{};
+
+	std::array<Microsoft::WRL::ComPtr<ID3D12Resource>, 2> swapChainResources;
+
+	D3D12_CPU_DESCRIPTOR_HANDLE rtvStartHandle;
+
+	D3D12_CPU_DESCRIPTOR_HANDLE rtvHandles[2];
+
+	D3D12_DEPTH_STENCIL_VIEW_DESC dsvDesc{};
+
+	D3D12_VIEWPORT viewport{};
+
+	D3D12_RECT scissorRect{};
+
+	D3D12_HEAP_PROPERTIES heapProperties{  };
+
+	D3D12_CLEAR_VALUE depthClerValue{};
+
+
+	D3D12_DEPTH_STENCIL_DESC depthStencilDesc{};
+
+	D3D12_RESOURCE_DESC resourceDesc{};
+
+	Microsoft::WRL::ComPtr<ID3D12Resource> resource;
+
+	D3D12_INFO_QUEUE_FILTER filter{};
+
+
 
 #pragma region DescriptorHeapの作成関数
 	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> CreateDescriptorHeap(
@@ -41,23 +133,33 @@ public: // メンバ関数
 	}
 #pragma endregion
 
-private:
-	// DirectX12デバイス
-	Microsoft::WRL::ComPtr<ID3D12Device> device;
-	// DXGIファクトリ
-	Microsoft::WRL::ComPtr<IDXGIFactory7> dxgiFactory;
-	// CommandQueue
-	Microsoft::WRL::ComPtr<ID3D12CommandQueue> commandQueue;
-	// CommandAllocator
-	Microsoft::WRL::ComPtr<ID3D12CommandAllocator> commandAllocator;
-	// CommandList
-	Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> commandList;
-	// SwapChain
-	Microsoft::WRL::ComPtr<IDXGISwapChain4> swapChain;
+#pragma region CPUとGPUの関数化
+	static D3D12_CPU_DESCRIPTOR_HANDLE GetCPUDescriptorHandle(Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> descriptorHeap, uint32_t descriptorSize, uint32_t index)
+	{
+		D3D12_CPU_DESCRIPTOR_HANDLE handleCPU = descriptorHeap->GetCPUDescriptorHandleForHeapStart();
+		handleCPU.ptr += (descriptorSize * index);
+		return handleCPU;
+	}
+
+	static D3D12_GPU_DESCRIPTOR_HANDLE GetGPUDescriptorHandle(Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> descrptorHeap, uint32_t descriptorSize, uint32_t index)
+	{
+		D3D12_GPU_DESCRIPTOR_HANDLE handleGPU = descrptorHeap->GetGPUDescriptorHandleForHeapStart();
+		handleGPU.ptr += (descriptorSize * index);
+		return handleGPU;
+	}
+#pragma endregion
+
+	// SRV
+	D3D12_CPU_DESCRIPTOR_HANDLE GetSRVCPUDescriptorHandle(uint32_t index);
+	D3D12_GPU_DESCRIPTOR_HANDLE GetSRVGPUDescriptorHandle(uint32_t index);
+	// RTV
+	D3D12_CPU_DESCRIPTOR_HANDLE GetRTVCPUDescriptorHandle(uint32_t index);
+	D3D12_GPU_DESCRIPTOR_HANDLE GetRTVGPUDescriptorHandle(uint32_t index);
+	// DSV
+	D3D12_CPU_DESCRIPTOR_HANDLE GetDSVCPUDescriptorHandle(uint32_t index);
+	D3D12_GPU_DESCRIPTOR_HANDLE GetDSVGPUDescriptorHandle(uint32_t index);
 
 	// WindowsAPI
 	WinApp* winApp = nullptr;
-
-
 };
 
