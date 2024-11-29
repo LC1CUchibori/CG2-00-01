@@ -185,7 +185,7 @@ Transform transform{ {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f},{0.0f,0.0f,0.0f } };
 #pragma endregion
 
 #pragma region cameraTransform変数
-Transform cameraTransform{ {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f},{0.0f,0.0f,-10.0f} };
+Transform cameraTransform{ {1.0f,1.0f,1.0f},{std::numbers::pi_v<float>/3.0f,std::numbers::pi_v<float>,0.0f},{0.0f,23.0f,10.0f} };
 #pragma endregion
 
 #pragma region spriteTransform変数
@@ -1318,6 +1318,18 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				Matrix4x4 worldMatrix = MakeAffineMatrix(particles[index].transform.scale, particles[index].transform.rotate, particles[index].transform.translata);
 				Matrix4x4 viewProjectionMatrix = Multiply(viewMatrix, projectionMatrix);
 				Matrix4x4 worldViewProjectionMatrix = Multiply(worldMatrix,viewProjectionMatrix );
+
+				Matrix4x4 backToFrontMatrix = MakeRatateYMatrix(std::numbers::pi_v<float>);
+				Matrix4x4 billboardMatrix = Multiply(backToFrontMatrix, cameraMatrix);
+				billboardMatrix.m[3][0] = 0.0f;
+				billboardMatrix.m[3][1] = 0.0f;
+				billboardMatrix.m[3][2] = 0.0f;
+				Matrix4x4 scaleMatrix = MakeScaleMatrix(particles[index].transform.scale);
+				Matrix4x4 RotateMatrix = MakeRotateXMatrix(particles[index].transform.rotate.x) *
+					MakeRatateYMatrix(particles[index].transform.rotate.y) *
+					MakeRatateZMatrix(particles[index].transform.rotate.z);
+				Matrix4x4 translateMatrix = MakeTranslateMatrix(particles[index].transform.translata);
+				Matrix4x4 worldMatrix = scaleMatrix * billboardMatrix * translateMatrix;
 				particles[index].transform.translata += particles[index].velocity * kDeltaTime;
 				particles[index].currentTime += kDeltaTime;
 				instancingData[numInstance].WVP = worldViewProjectionMatrix;
