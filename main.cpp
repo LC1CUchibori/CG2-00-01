@@ -992,121 +992,53 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		ImGui::Render();
 
-
-		//#pragma region コマンドを積み込み確定させる
-		//			UINT backBufferIndex = swapChain->GetCurrentBackBufferIndex();
-		//
-		//#pragma region TransitionBarrierを貼る
-		//			D3D12_RESOURCE_BARRIER barrier{};
-		//
-		//			barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-		//
-		//			barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
-		//
-		//			barrier.Transition.pResource = swapChainResources[backBufferIndex].Get();
-		//
-		//			barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_PRESENT;
-		//
-		//			barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;
-		//
-		//			commandList->ResourceBarrier(1, &barrier);
-		//#pragma endregion
-		//
-		//			commandList->OMSetRenderTargets(1, &rtvHandles[backBufferIndex], false, nullptr);
-		//
-		//			float clearColor[] = { 0.1f,0.25f,0.5f,1.0f };
-		//			commandList->ClearRenderTargetView(rtvHandles[backBufferIndex], clearColor, 0, nullptr);
-		//
-		//			// 描画先のRTVとDSVを設定する
-		//			D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle = dsvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
-		//			commandList->OMSetRenderTargets(1, &rtvHandles[backBufferIndex], false, &dsvHandle);
-		//			commandList->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
-		//
-		//			//描画用のDescriptHeap
-		//			Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> descriptorHepes[] = { srvDescriptorHeap };
-		//			commandList->SetDescriptorHeaps(1, descriptorHepes->GetAddressOf());
-		//			ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), commandList.Get());
-		//
-		//#pragma region コマンドを積む
-		//			commandList->RSSetViewports(1, &viewport);
-		//			commandList->RSSetScissorRects(1, &scissorRect);
-		//			//RootSignatureを設定。POSに設定しているけどベット設定が必要
-		//			commandList->SetGraphicsRootSignature(rootSignature.Get());
-		//			commandList->SetPipelineState(graphicsPipelineState.Get());
-		//#pragma endregion
-		//
-		//
-		//#pragma region 三角形の描画
-		//			commandList->IASetVertexBuffers(0, 1, &vertexBufferView);
-		//			//現状を設定。POSに設定しているものとはまた別。おなじ物を設定すると考えておけばいい
-		//			commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-		//			commandList->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress());
-		//			//wvp用のCBufferの場所を設定
-		//			commandList->SetGraphicsRootConstantBufferView(1, transformationMatrixResource->GetGPUVirtualAddress());
-		//			commandList->SetGraphicsRootDescriptorTable(2, useMonsterBall ? textureSrvHandleGPU2 : textureSrvHandleGPU);
-		//			commandList->SetGraphicsRootConstantBufferView(3, directionalLightSprite->GetGPUVirtualAddress());
-		//			//描画！
-		//			//commandList->DrawInstanced(kSubdivision * kSubdivision * 6, 1, 0, 0);
-		//			// ModelDataの描画
-		//			commandList->DrawInstanced(UINT(modelData.vertices.size()), 1, 0, 0);
-		//#pragma endregion
-		//
-		//			commandList->IASetIndexBuffer(&indexBufferViewSprite);
-		//			commandList->DrawIndexedInstanced(6, 1, 0, 0, 0);
-		//
-		//
-		//#pragma region Spriteの描画
-		//			commandList->IASetVertexBuffers(0, 1, &vertexBufferViewSprite);
-		//			commandList->SetGraphicsRootConstantBufferView(0, transformationMatrixResourceSprite->GetGPUVirtualAddress());
-		//			//TransFomationMatrixBufferの場所を設定
-		//			commandList->SetGraphicsRootConstantBufferView(1, transformationMatrixResourceSprite->GetGPUVirtualAddress());
-		//			commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandleGPU);
-		//			commandList->SetGraphicsRootConstantBufferView(0, materialResourceSprite->GetGPUVirtualAddress());
-		//			//描画！
-		//			commandList->DrawInstanced(6, 1, 0, 0);
-		//#pragma endregion
-		//
-		//
-		//#pragma region 画面表示をできるようにする
-		//			barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
-		//
-		//			barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PRESENT;
-		//
-		//			commandList->ResourceBarrier(1, &barrier);
-		//#pragma endregion
-		//			hr = commandList->Close();
-		//
-		//			assert(SUCCEEDED(hr));
-		//#pragma endregion
-		//
-		//#pragma region コマンドをキックする
-		//			Microsoft::WRL::ComPtr<ID3D12CommandList> commandLists[] = { commandList };
-		//			commandQueue->ExecuteCommandLists(1, commandLists->GetAddressOf());
-		//
-		//			swapChain->Present(1, 0);
-		//
-		//#pragma region GPUにSignalを送る
-		//			fenceValue++;
-		//
-		//			commandQueue->Signal(fence.Get(), fenceValue);
-		//
-		//#pragma endregion
-		//
-		//#pragma region Fenceの値を確認してGPUを待つ
-		//			if (fence->GetCompletedValue() < fenceValue) {
-		//				fence->SetEventOnCompletion(fenceValue, fenceEvent);
-		//
-		//				WaitForSingleObject(fenceEvent, INFINITE);
-		//			}
-		//#pragma endregion
-		//
-		//			hr = commandAllocator->Reset();
-		//			assert(SUCCEEDED(hr));
-		//
-		//			hr = commandList->Reset(commandAllocator.Get(), nullptr);
-		//			assert(SUCCEEDED(hr));
-		//#pragma endregion
-
+		
+		dxCommon->PreDraw();
+		
+		#pragma region コマンドを積む
+					
+					//RootSignatureを設定。POSに設定しているけどベット設定が必要
+					commandList->SetGraphicsRootSignature(rootSignature.Get());
+					commandList->SetPipelineState(graphicsPipelineState.Get());
+		#pragma endregion
+		
+		
+		#pragma region 三角形の描画
+					commandList->IASetVertexBuffers(0, 1, &vertexBufferView);
+					//現状を設定。POSに設定しているものとはまた別。おなじ物を設定すると考えておけばいい
+					commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+					commandList->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress());
+					//wvp用のCBufferの場所を設定
+					commandList->SetGraphicsRootConstantBufferView(1, transformationMatrixResource->GetGPUVirtualAddress());
+					commandList->SetGraphicsRootDescriptorTable(2, useMonsterBall ? textureSrvHandleGPU2 : textureSrvHandleGPU);
+					commandList->SetGraphicsRootConstantBufferView(3, directionalLightSprite->GetGPUVirtualAddress());
+					//描画！
+					//commandList->DrawInstanced(kSubdivision * kSubdivision * 6, 1, 0, 0);
+					// ModelDataの描画
+					commandList->DrawInstanced(UINT(modelData.vertices.size()), 1, 0, 0);
+		#pragma endregion
+		
+					commandList->IASetIndexBuffer(&indexBufferViewSprite);
+					commandList->DrawIndexedInstanced(6, 1, 0, 0, 0);
+		
+		
+		#pragma region Spriteの描画
+					commandList->IASetVertexBuffers(0, 1, &vertexBufferViewSprite);
+					commandList->SetGraphicsRootConstantBufferView(0, transformationMatrixResourceSprite->GetGPUVirtualAddress());
+					//TransFomationMatrixBufferの場所を設定
+					commandList->SetGraphicsRootConstantBufferView(1, transformationMatrixResourceSprite->GetGPUVirtualAddress());
+					commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandleGPU);
+					commandList->SetGraphicsRootConstantBufferView(0, materialResourceSprite->GetGPUVirtualAddress());
+					//描画！
+					commandList->DrawInstanced(6, 1, 0, 0);
+	
+		
+		#pragma region コマンドをキックする
+					
+		
+					swapChain->Present(1, 0);
+		
+		
 	}
 
 

@@ -46,6 +46,10 @@ public: // メンバ関数
 	void DXCCompilerGenerate();
 	// ImGuiの初期化
 	void ImGuiInitialize();
+	// 描画前処理
+	void PreDraw();
+	// 描画後処理
+	void PostDraw();
 
 	ID3D12Device* GetDevice() { return device.Get(); }
 
@@ -54,6 +58,11 @@ private:
 	uint32_t descriptorSizeSRV;
 	uint32_t descriptorSizeRTV;
 	uint32_t descriptorSizeDSV;
+
+	HANDLE fenceEvent;
+	uint64_t fenceValue = 0;
+
+	HRESULT hr;
 
 	// DirectX12デバイス
 	Microsoft::WRL::ComPtr<ID3D12Device> device;
@@ -115,7 +124,6 @@ private:
 	Microsoft::WRL::ComPtr<ID3D12Resource> resource;
 
 	D3D12_INFO_QUEUE_FILTER filter{};
-
 
 
 #pragma region DescriptorHeapの作成関数
