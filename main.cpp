@@ -31,36 +31,7 @@ extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg
 #pragma comment(lib,"dxcompiler.lib")
 
 
-#pragma region Resource作成の関数化(CreateBufferResource)
-Microsoft::WRL::ComPtr<ID3D12Resource> CreateBufferResource(Microsoft::WRL::ComPtr<ID3D12Device> device, size_t sizeInBytes) {
-	D3D12_HEAP_PROPERTIES uploadHeapProperties{};
-	uploadHeapProperties.Type = D3D12_HEAP_TYPE_UPLOAD;
 
-	D3D12_RESOURCE_DESC vertexResourceDesc{};
-
-	vertexResourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
-	vertexResourceDesc.Width = sizeInBytes;
-
-	vertexResourceDesc.Height = 1;
-	vertexResourceDesc.DepthOrArraySize = 1;
-	vertexResourceDesc.MipLevels = 1;
-	vertexResourceDesc.SampleDesc.Count = 1;
-
-	vertexResourceDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
-
-	Microsoft::WRL::ComPtr<ID3D12Resource> vertexResource = nullptr;
-	HRESULT hr = device->CreateCommittedResource(
-		&uploadHeapProperties,
-		D3D12_HEAP_FLAG_NONE,
-		&vertexResourceDesc,
-		D3D12_RESOURCE_STATE_GENERIC_READ,
-		nullptr,
-		IID_PPV_ARGS(&vertexResource));
-	assert(SUCCEEDED(hr));
-
-	return vertexResource;
-}
-#pragma endregion
 
 /*#pragma region ConvertString
 std::wstring ConvertString(const std::string& str) {
@@ -98,70 +69,7 @@ std::string ConvertString(const std::wstring& str) {
 //}
 //#pragma endregion
 
-#pragma region CompilerShader関数
-IDxcBlob* CompileShader(
-	const std::wstring& filePath,
-	const wchar_t* profile,
-	IDxcUtils* dxcUtils,
-	IDxcCompiler3* dxcCompiler,
-	IDxcIncludeHandler* includeHandler
-) {
-#pragma region hlslファイルを読む
-	Logger::Log(StringUtility::ConvertString(std::format(L"Begin CompileShader, path:{}, profile:{}\n", filePath, profile)));
 
-	IDxcBlobEncoding* shaderSource = nullptr;
-	HRESULT hr = dxcUtils->LoadFile(filePath.c_str(), nullptr, &shaderSource);
-
-	assert(SUCCEEDED(hr));
-
-	DxcBuffer shaderSourceBuffer;
-	shaderSourceBuffer.Ptr = shaderSource->GetBufferPointer();
-	shaderSourceBuffer.Size = shaderSource->GetBufferSize();
-	shaderSourceBuffer.Encoding = DXC_CP_UTF8;
-#pragma endregion
-
-#pragma region Compileする
-	LPCWSTR arguments[] = {
-		filePath.c_str(),
-		L"-E",L"main",
-		L"-T",profile,
-		L"-Zi",L"-Qembed_debug",
-		L"-Od",
-		L"-Zpr"
-	};
-
-	IDxcResult* shaderResult = nullptr;
-	hr = dxcCompiler->Compile(
-		&shaderSourceBuffer,
-		arguments,
-		_countof(arguments),
-		includeHandler,
-		IID_PPV_ARGS(&shaderResult)
-	);
-
-	assert(SUCCEEDED(hr));
-#pragma endregion
-
-#pragma region 警告・エラーが出ていないか確認する
-	IDxcBlobUtf8* shaderError = nullptr;
-	shaderResult->GetOutput(DXC_OUT_ERRORS, IID_PPV_ARGS(&shaderError), nullptr);
-	if (shaderError != nullptr && shaderError->GetStringLength() != 0) {
-		Logger::Log(shaderError->GetStringPointer());
-
-		assert(false);
-	}
-#pragma endregion
-
-#pragma region Compile結果を受け取って返す
-	IDxcBlob* shaderBlob = nullptr;
-	hr = shaderResult->GetOutput(DXC_OUT_OBJECT, IID_PPV_ARGS(&shaderBlob), nullptr);
-	assert(SUCCEEDED(hr));
-
-	Logger::Log(StringUtility::ConvertString(std::format(L"Compile Succeeded, path:{}, profile:{}\n", filePath, profile)));
-
-	return shaderBlob;
-}
-#pragma endregion
 
 #pragma region Transform変数
 Transform transform{ {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f},{0.0f,0.0f,0.0f } };
@@ -238,38 +146,7 @@ DirectX::ScratchImage LoadTexture(const std::string& filePath) {
 }
 #pragma endregion
 
-#pragma region CreateTextureResource
-Microsoft::WRL::ComPtr<ID3D12Resource> CreateTextureResource(Microsoft::WRL::ComPtr<ID3D12Device> device, const DirectX::TexMetadata& metadata) {
 
-	// metadataを基にResourceの設定
-	D3D12_RESOURCE_DESC resouceDesc{ };
-	resouceDesc.Width = UINT(metadata.width);                             // Textureの幅
-	resouceDesc.Height = UINT(metadata.height);                           // Textureの高さ
-	resouceDesc.MipLevels = UINT16(metadata.mipLevels);                   // mipmapの数
-	resouceDesc.DepthOrArraySize = UINT16(metadata.arraySize);            // 奥行きor配Texturaの配列数
-	resouceDesc.Format = metadata.format;                                 // Textureのフォーマット
-	resouceDesc.SampleDesc.Count = 1;                                     // サンプリクト。１固定。
-	resouceDesc.Dimension = D3D12_RESOURCE_DIMENSION(metadata.dimension); // Textureの次元数。普段使っているのは２次元
-
-	// 利用するHeapの設定。非常に特殊な運用。
-	D3D12_HEAP_PROPERTIES heapProperties{};
-	heapProperties.Type = D3D12_HEAP_TYPE_DEFAULT;                        // 細かい設定を行う
-	//heapProperties.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_WRITE_BACK; // writeBackポリシーでCPUアクセス可能
-	//heapProperties.MemoryPoolPreference = D3D12_MEMORY_POOL_L0;          // プロセッサの近くに配置
-
-	// Resouceの作成
-	Microsoft::WRL::ComPtr<ID3D12Resource> resource = nullptr;
-	HRESULT hr = device->CreateCommittedResource(
-		&heapProperties,                   // Heapの設定
-		D3D12_HEAP_FLAG_NONE,              // Heapの特殊設定。特になし
-		&resouceDesc,                      // Resourceの設定
-		D3D12_RESOURCE_STATE_COPY_DEST,    // 初回のResourceState, Textureは基本読むだけ
-		nullptr,                           // Clear最適値。使わないのでnullptr
-		IID_PPV_ARGS(&resource));          // 作成するResourceポインタへのポインタ
-	assert(SUCCEEDED(hr));
-	return resource;
-}
-#pragma endregion
 
 #pragma region UploadTextureData関数
 [[nodiscard]]
@@ -426,24 +303,24 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	dxCommon->Initialize(winApp);
 
 
-	//#pragma region DescriptorHeapの生成
-	//	// ディスクリプタヒープの生成
-	//	// RTV用のヒープでディスクリプタの数は2。RTVはShader内で読むものではないので、ShaderVisibleはfalse
-	//	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> rtvDescriptorHeap = CreateDescriptorHeap(device, D3D12_DESCRIPTOR_HEAP_TYPE_RTV, 2, false);
-	//	// SRV用のヒープでディスクリプタの数は128。SRVはShader内で読むものなので、ShaderVisibleはtrue
-	//	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> srvDescriptorHeap = CreateDescriptorHeap(device, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 128, true);
-	//	// DVS用のヒープでディスクリプタの数は1。DSVはShader内で触るものではないので、ShaderVisibleはfalse
-	//	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> dsvDescriptorHeap = CreateDescriptorHeap(device, D3D12_DESCRIPTOR_HEAP_TYPE_DSV, 1, false);
-	//
-	//	// ディスクリプタヒープが作れなかったので起動できない
-	//	assert(SUCCEEDED(hr));
-	//#pragma endregion
+	#pragma region DescriptorHeapの生成
+		// ディスクリプタヒープの生成
+		// RTV用のヒープでディスクリプタの数は2。RTVはShader内で読むものではないので、ShaderVisibleはfalse
+		Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> rtvDescriptorHeap = CreateDescriptorHeap(device, D3D12_DESCRIPTOR_HEAP_TYPE_RTV, 2, false);
+		// SRV用のヒープでディスクリプタの数は128。SRVはShader内で読むものなので、ShaderVisibleはtrue
+		Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> srvDescriptorHeap = CreateDescriptorHeap(device, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 128, true);
+		// DVS用のヒープでディスクリプタの数は1。DSVはShader内で触るものではないので、ShaderVisibleはfalse
+		Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> dsvDescriptorHeap = CreateDescriptorHeap(device, D3D12_DESCRIPTOR_HEAP_TYPE_DSV, 1, false);
+	
+		// ディスクリプタヒープが作れなかったので起動できない
+		assert(SUCCEEDED(hr));
+	#pragma endregion
 
-		/*const uint32_t descriptorSizeSRV = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+		const uint32_t descriptorSizeSRV = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 		const uint32_t descriptorSizeRTV = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
-		const uint32_t descriptorSizeDSV = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);*/
+		const uint32_t descriptorSizeDSV = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
 
-		//GetCPUDescriptorHandle(rtvDescriptorHeap, descriptorSizeRTV, 0);
+		GetCPUDescriptorHandle(rtvDescriptorHeap, descriptorSizeRTV, 0);
 
 #pragma region RootSignatureを生成
 	D3D12_ROOT_SIGNATURE_DESC descriptionRootSignature{};
@@ -546,45 +423,45 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	rasterizerDesc.FillMode = D3D12_FILL_MODE_SOLID;
 #pragma endregion
 
-	//#pragma region ShaderをCompileする
-	//	IDxcBlob* vertexShaderBlob = CompileShader(L"Resources/shaders/Object3d.VS.hlsl",
-	//		L"vs_6_0", dxcUtils, dxcCompiler, includeHandler);
-	//	assert(vertexShaderBlob != nullptr);
-	//
-	//	IDxcBlob* pixelShaderBlob = CompileShader(L"Resources/shaders/Object3d.PS.hlsl",
-	//		L"ps_6_0", dxcUtils, dxcCompiler, includeHandler)
-	//
-	//		;
-	//	assert(pixelShaderBlob != nullptr);
-	//#pragma endregion
-	//
-	//#pragma region PSOを生成する
-	//	D3D12_GRAPHICS_PIPELINE_STATE_DESC graphicsPipelineStateDesc{};
-	//	graphicsPipelineStateDesc.pRootSignature = rootSignature.Get();
-	//	graphicsPipelineStateDesc.InputLayout = inputLayoutDesc;
-	//	graphicsPipelineStateDesc.VS = { vertexShaderBlob->GetBufferPointer(),
-	//		vertexShaderBlob->GetBufferSize() };
-	//	graphicsPipelineStateDesc.PS = { pixelShaderBlob->GetBufferPointer(),
-	//		pixelShaderBlob->GetBufferSize() };
-	//	graphicsPipelineStateDesc.BlendState = blendDesc;
-	//	graphicsPipelineStateDesc.RasterizerState = rasterizerDesc;
-	//	// 書き込むRTVの情報
-	//	graphicsPipelineStateDesc.NumRenderTar= 1;
-	//	graphicsPipelineStateDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
-	//	// 利用するトポロジ（形状）のタイプ。三角形
-	//	graphicsPipelineStateDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
-	//	// どのように画面に色を打ち込むかの設定（気にしなくてよい）
-	//	graphicsPipelineStateDesc.SampleDesc.Count = 1;
-	//	graphicsPipelineStateDesc.SampleMask = D3D12_DEFAULT_SAMPLE_MASK;
-	//	// DepthStencilの設定
-	//	graphicsPipelineStateDesc.DepthStencilState = depthStencilDesc;
-	//	graphicsPipelineStateDesc.DSVFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
-	//	// 実際に生成
-	//	Microsoft::WRL::ComPtr<ID3D12PipelineState> graphicsPipelineState = nullptr;
-	//	hr = device->CreateGraphicsPipelineState(&graphicsPipelineStateDesc,
-	//		IID_PPV_ARGS(&graphicsPipelineState));
-	//	assert(SUCCEEDED(hr));
-	//#pragma endregion
+	#pragma region ShaderをCompileする
+		IDxcBlob* vertexShaderBlob = CompileShader(L"Resources/shaders/Object3d.VS.hlsl",
+			L"vs_6_0", dxcUtils, dxcCompiler, includeHandler);
+		assert(vertexShaderBlob != nullptr);
+	
+		IDxcBlob* pixelShaderBlob = CompileShader(L"Resources/shaders/Object3d.PS.hlsl",
+			L"ps_6_0", dxcUtils, dxcCompiler, includeHandler)
+	
+			;
+		assert(pixelShaderBlob != nullptr);
+	#pragma endregion
+	
+	#pragma region PSOを生成する
+		D3D12_GRAPHICS_PIPELINE_STATE_DESC graphicsPipelineStateDesc{};
+		graphicsPipelineStateDesc.pRootSignature = rootSignature.Get();
+		graphicsPipelineStateDesc.InputLayout = inputLayoutDesc;
+		graphicsPipelineStateDesc.VS = { vertexShaderBlob->GetBufferPointer(),
+			vertexShaderBlob->GetBufferSize() };
+		graphicsPipelineStateDesc.PS = { pixelShaderBlob->GetBufferPointer(),
+			pixelShaderBlob->GetBufferSize() };
+		graphicsPipelineStateDesc.BlendState = blendDesc;
+		graphicsPipelineStateDesc.RasterizerState = rasterizerDesc;
+		// 書き込むRTVの情報
+		graphicsPipelineStateDesc.NumRenderTar= 1;
+		graphicsPipelineStateDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
+		// 利用するトポロジ（形状）のタイプ。三角形
+		graphicsPipelineStateDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+		// どのように画面に色を打ち込むかの設定（気にしなくてよい）
+		graphicsPipelineStateDesc.SampleDesc.Count = 1;
+		graphicsPipelineStateDesc.SampleMask = D3D12_DEFAULT_SAMPLE_MASK;
+		// DepthStencilの設定
+		graphicsPipelineStateDesc.DepthStencilState = depthStencilDesc;
+		graphicsPipelineStateDesc.DSVFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
+		// 実際に生成
+		Microsoft::WRL::ComPtr<ID3D12PipelineState> graphicsPipelineState = nullptr;
+		hr = device->CreateGraphicsPipelineState(&graphicsPipelineStateDesc,
+			IID_PPV_ARGS(&graphicsPipelineState));
+		assert(SUCCEEDED(hr));
+	#pragma endregion
 
 
 #pragma region Resource
@@ -594,9 +471,9 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	Microsoft::WRL::ComPtr<ID3D12Resource> vertexResource = CreateBufferResource(dxCommon->GetDevice(), sizeof(VertexData) * kSubdivision * kSubdivision * 6);
 #pragma endregion
 
-	//#pragma region DepthStencilTextureを作成
-	//	Microsoft::WRL::ComPtr<ID3D12Resource> depthStencilResource = CreateDepthStencilTexturResource(device, WinApp::kClientWidth, WinApp::kClientHeight);
-	//#pragma endregion
+	#pragma region DepthStencilTextureを作成
+		Microsoft::WRL::ComPtr<ID3D12Resource> depthStencilResource = CreateDepthStencilTexturResource(device, WinApp::kClientWidth, WinApp::kClientHeight);
+	#pragma endregion
 
 #pragma region VertexBufferResourceを生成
 	Microsoft::WRL::ComPtr<ID3D12Resource> vertexResourceSprite = CreateBufferResource(dxCommon->GetDevice(), sizeof(VertexData) * 6);
@@ -646,18 +523,18 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	materialData->uvTransform = MakeIdentity4x4();
 	materialDataSprite->uvTransform = MakeIdentity4x4();
 
-	//////vertexResource頂点バッファーを作成する
-	//D3D12_VERTEX_BUFFER_VIEW vertexBufferView{ };
-	////リソースの先頭のアドレスから使う
-	//vertexBufferView.BufferLocation = vertexResource->GetGPUVirtualAddress();
-	////使用するリソースのサイズは頂点分のサイズ
-	//vertexBufferView.SizeInBytes = sizeof(VertexData) * kSubdivision * kSubdivision * 6;
-	////1頂点当たりのサイズ
-	//vertexBufferView.StrideInBytes = sizeof(VertexData);
-	////頂点リソースにデータを書き込む
-	//VertexData* vertexData = nullptr;
-	////書き込むためのアドレスを取得
-	//vertexResource->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
+	////vertexResource頂点バッファーを作成する
+	D3D12_VERTEX_BUFFER_VIEW vertexBufferView{ };
+	//リソースの先頭のアドレスから使う
+	vertexBufferView.BufferLocation = vertexResource->GetGPUVirtualAddress();
+	//使用するリソースのサイズは頂点分のサイズ
+	vertexBufferView.SizeInBytes = sizeof(VertexData) * kSubdivision * kSubdivision * 6;
+	//1頂点当たりのサイズ
+	vertexBufferView.StrideInBytes = sizeof(VertexData);
+	//頂点リソースにデータを書き込む
+	VertexData* vertexData = nullptr;
+	//書き込むためのアドレスを取得
+	vertexResource->Map(0, nullptr, reinterpret_cast<void**>(&vertexData));
 
 #pragma region ModelDataを使う
 	// モデルデータ読み込み
@@ -824,58 +701,58 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	vertexDataSprite[5].normal = { 0.0f,0.0f,-1.0f };
 #pragma endregion
 
-	//#pragma region Texture3を読む
-	//	DirectX::ScratchImage mipImages3 = LoadTexture("Resources/monsterBall.png");
-	//	const DirectX::TexMetadata& metadata3 = mipImages3.GetMetadata();
-	//	Microsoft::WRL::ComPtr<ID3D12Resource> textureResources3 = CreateTextureResource(device, metadata3);
-	//	Microsoft::WRL::ComPtr<ID3D12Resource> intermediateResource3 = UploadTextureData(textureResources3, mipImages3, device, commandList);
-	//#pragma endregion<
-	//
-	//#pragma region Texture2を読む
-	//	//DirectX::ScratchImage mipImages2 = LoadTexture("Resources/uvChecker.png");
-	//	DirectX::ScratchImage mipImages2 = LoadTexture(modelData.material.textureFilePath);
-	//	const DirectX::TexMetadata& metadata2 = mipImages2.GetMetadata();
-	//	Microsoft::WRL::ComPtr<ID3D12Resource> textureResources2 = CreateTextureResource(device, metadata2);
-	//	Microsoft::WRL::ComPtr<ID3D12Resource> intermediateResource2 = UploadTextureData(textureResources2, mipImages2, device, commandList);
-	//#pragma endregion
-	//
-	//#pragma region Texturを読む
-	//	// Textureを読んで転送する
-	//	DirectX::ScratchImage mipImages = LoadTexture("Resources/uvChecker.png");
-	//	const DirectX::TexMetadata& metadata = mipImages.GetMetadata();
-	//	Microsoft::WRL::ComPtr<ID3D12Resource> textureResource = CreateTextureResource(device, metadata);
-	//	Microsoft::WRL::ComPtr<ID3D12Resource> intermediateResource = UploadTextureData(textureResource, mipImages, device, commandList);
-	//#pragma endregion 
-	//
-	//#pragma region ShaderResourceView
-	//	// metaDataを基にSRVの設定
-	//	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc{  };
-	//	srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-	//	srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;//2Dテクスチャ
-	//	srvDesc.Texture2D.MipLevels = UINT(metadata.mipLevels);
-	//
-	//	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc2{};
-	//	srvDesc2.Format = metadata2.format;
-	//	srvDesc2.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-	//	srvDesc2.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;//2Dテクスチャ
-	//	srvDesc2.Texture2D.MipLevels = UINT(metadata2.mipLevels);
-	//
-	//	// SRVを作成するDescriptHeap	の場所を決める
-	//	D3D12_CPU_DESCRIPTOR_HANDLE textureSrvHandleCPU = srvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
-	//	D3D12_GPU_DESCRIPTOR_HANDLE textureSrvHandleGPU = srvDescriptorHeap->GetGPUDescriptorHandleForHeapStart();
-	//
-	//	// 2枚目のSRVをつくる
-	//	D3D12_CPU_DESCRIPTOR_HANDLE textureSrvHandleCPU2 = GetCPUDescriptorHandle(srvDescriptorHeap, descriptorSizeSRV, 2);
-	//	D3D12_GPU_DESCRIPTOR_HANDLE textureSrvHandleGPU2 = GetGPUDescriptorHandle(srvDescriptorHeap, descriptorSizeSRV, 2);
-	//
-	//	// 先頭はImGuiが使っているのでその次を使う
-	//	textureSrvHandleCPU.ptr += device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-	//	textureSrvHandleGPU.ptr += device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-	//	// SRVの設定
-	//	device->CreateShaderResourceView(textureResource.Get(), &srvDesc, textureSrvHandleCPU);
-	//
-	//	device->CreateShaderResourceView(textureResources2.Get(), &srvDesc2, textureSrvHandleCPU2);
-	//#pragma endregion 
+	#pragma region Texture3を読む
+		DirectX::ScratchImage mipImages3 = LoadTexture("Resources/monsterBall.png");
+		const DirectX::TexMetadata& metadata3 = mipImages3.GetMetadata();
+		Microsoft::WRL::ComPtr<ID3D12Resource> textureResources3 = CreateTextureResource(device, metadata3);
+		Microsoft::WRL::ComPtr<ID3D12Resource> intermediateResource3 = UploadTextureData(textureResources3, mipImages3, device, commandList);
+	#pragma endregion<
+	
+	#pragma region Texture2を読む
+		//DirectX::ScratchImage mipImages2 = LoadTexture("Resources/uvChecker.png");
+		DirectX::ScratchImage mipImages2 = LoadTexture(modelData.material.textureFilePath);
+		const DirectX::TexMetadata& metadata2 = mipImages2.GetMetadata();
+		Microsoft::WRL::ComPtr<ID3D12Resource> textureResources2 = CreateTextureResource(device, metadata2);
+		Microsoft::WRL::ComPtr<ID3D12Resource> intermediateResource2 = UploadTextureData(textureResources2, mipImages2, device, commandList);
+	#pragma endregion
+	
+	#pragma region Texturを読む
+		// Textureを読んで転送する
+		DirectX::ScratchImage mipImages = LoadTexture("Resources/uvChecker.png");
+		const DirectX::TexMetadata& metadata = mipImages.GetMetadata();
+		Microsoft::WRL::ComPtr<ID3D12Resource> textureResource = CreateTextureResource(device, metadata);
+		Microsoft::WRL::ComPtr<ID3D12Resource> intermediateResource = UploadTextureData(textureResource, mipImages, device, commandList);
+	#pragma endregion 
+	
+	#pragma region ShaderResourceView
+		// metaDataを基にSRVの設定
+		D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc{  };
+		srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+		srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;//2Dテクスチャ
+		srvDesc.Texture2D.MipLevels = UINT(metadata.mipLevels);
+	
+		D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc2{};
+		srvDesc2.Format = metadata2.format;
+		srvDesc2.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+		srvDesc2.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;//2Dテクスチャ
+		srvDesc2.Texture2D.MipLevels = UINT(metadata2.mipLevels);
+	
+		// SRVを作成するDescriptHeap	の場所を決める
+		D3D12_CPU_DESCRIPTOR_HANDLE textureSrvHandleCPU = srvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
+		D3D12_GPU_DESCRIPTOR_HANDLE textureSrvHandleGPU = srvDescriptorHeap->GetGPUDescriptorHandleForHeapStart();
+	
+		// 2枚目のSRVをつくる
+		D3D12_CPU_DESCRIPTOR_HANDLE textureSrvHandleCPU2 = GetCPUDescriptorHandle(srvDescriptorHeap, descriptorSizeSRV, 2);
+		D3D12_GPU_DESCRIPTOR_HANDLE textureSrvHandleGPU2 = GetGPUDescriptorHandle(srvDescriptorHeap, descriptorSizeSRV, 2);
+	
+		// 先頭はImGuiが使っているのでその次を使う
+		textureSrvHandleCPU.ptr += device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+		textureSrvHandleGPU.ptr += device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+		// SRVの設定
+		device->CreateShaderResourceView(textureResource.Get(), &srvDesc, textureSrvHandleCPU);
+	
+		device->CreateShaderResourceView(textureResources2.Get(), &srvDesc2, textureSrvHandleCPU2);
+	#pragma endregion 
 
 
 		//ウィンドウのｘボタンが押されるまでループ
