@@ -125,6 +125,7 @@ private:
 
 	D3D12_INFO_QUEUE_FILTER filter{};
 
+	//Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> descriptorHepes;
 
 #pragma region DescriptorHeapの作成関数
 	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> CreateDescriptorHeap(

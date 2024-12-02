@@ -207,7 +207,7 @@ void DirectXCommon::DepthBufferGenerate()
 			&resourceDesc,//Resourceの設定
 			D3D12_RESOURCE_STATE_DEPTH_WRITE,//深度値を書き込む状態のしておく
 			&depthClerValue,//Clear最適値
-			IID_PPV_ARGS(&resource));//作成するResourceポインタへのポインタ
+			IID_PPV_ARGS(&depthStencilResource));//作成するResourceポインタへのポインタ
 		assert(SUCCEEDED(hr));
 
 		// DepthStencilStateの設定
@@ -345,16 +345,17 @@ void DirectXCommon::PreDraw()
 
 	commandList->ResourceBarrier(1, &barrier);
 
-	commandList->OMSetRenderTargets(1, &rtvHandles[backBufferIndex], false, nullptr);
+	//commandList->OMSetRenderTargets(1, &rtvHandles[backBufferIndex], false, nullptr);
 ;
 #pragma endregion
 
 #pragma region RTVとDSVを設定する
 	// 描画先のRTVとDSVを設定する
 	D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle = dsvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
+	//D3D12_GPU_DESCRIPTOR_HANDLE srvHandle = srvDescriptorHeap->GetGPUDescriptorHandleForHeapStart();
 	commandList->OMSetRenderTargets(1, &rtvHandles[backBufferIndex], false, &dsvHandle);
 #pragma endregion
-
+	
 #pragma region 画面全体の色をクリア
 	float clearColor[] = { 0.1f,0.25f,0.5f,1.0f };
 	commandList->ClearRenderTargetView(rtvHandles[backBufferIndex], clearColor, 0, nullptr);
@@ -366,8 +367,8 @@ void DirectXCommon::PreDraw()
 
 #pragma region SRV用のデスクリプタヒープを指定
 	//描画用のDescriptHeap
-	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> descriptorHepes[] = { srvDescriptorHeap };
-	commandList->SetDescriptorHeaps(1, descriptorHepes->GetAddressOf());
+	ID3D12DescriptorHeap *descriptorHepes[] = { srvDescriptorHeap.Get()};
+	commandList->SetDescriptorHeaps(1, descriptorHepes);
 	ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), commandList.Get());
 #pragma endregion
 
@@ -388,6 +389,13 @@ void DirectXCommon::PostDraw()
 
 #pragma region リソースバリアで表示状態に変更
 	D3D12_RESOURCE_BARRIER barrier{};
+
+	barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+
+	barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+
+	barrier.Transition.pResource = swapChainResources[backBufferIndex].Get();
+
 	barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
 
 	barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PRESENT;
@@ -402,11 +410,12 @@ void DirectXCommon::PostDraw()
 #pragma endregion
 
 #pragma region GPUコマンドの実行
-
+	Microsoft::WRL::ComPtr<ID3D12CommandList> commandLists[] = { commandList };
+	commandQueue->ExecuteCommandLists(1, commandLists->GetAddressOf());
 #pragma endregion
 
 #pragma region GPU画面の交換を通知
-	
+	swapChain->Present(1, 0);
 #pragma endregion
 
 #pragma region Fenceの値を更新
@@ -418,13 +427,11 @@ void DirectXCommon::PostDraw()
 #pragma endregion
 
 #pragma region コマンドキューにシグナルに送る
-	Microsoft::WRL::ComPtr<ID3D12CommandList> commandLists[] = { commandList };
-	commandQueue->ExecuteCommandLists(1, commandLists->GetAddressOf());
+	commandQueue->Signal(fence.Get(), fenceValue);
 #pragma endregion
 
 #pragma region コマンド完了待ち
 	fenceValue++;
-	commandQueue->Signal(fence.Get(), fenceValue);
 #pragma endregion
 
 #pragma region コマンドアロケーターのリセット

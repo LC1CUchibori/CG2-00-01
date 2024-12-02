@@ -992,53 +992,51 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 		ImGui::Render();
 
-		
+
 		dxCommon->PreDraw();
-		
-		#pragma region コマンドを積む
-					
-					//RootSignatureを設定。POSに設定しているけどベット設定が必要
-					commandList->SetGraphicsRootSignature(rootSignature.Get());
-					commandList->SetPipelineState(graphicsPipelineState.Get());
-		#pragma endregion
-		
-		
-		#pragma region 三角形の描画
-					commandList->IASetVertexBuffers(0, 1, &vertexBufferView);
-					//現状を設定。POSに設定しているものとはまた別。おなじ物を設定すると考えておけばいい
-					commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-					commandList->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress());
-					//wvp用のCBufferの場所を設定
-					commandList->SetGraphicsRootConstantBufferView(1, transformationMatrixResource->GetGPUVirtualAddress());
-					commandList->SetGraphicsRootDescriptorTable(2, useMonsterBall ? textureSrvHandleGPU2 : textureSrvHandleGPU);
-					commandList->SetGraphicsRootConstantBufferView(3, directionalLightSprite->GetGPUVirtualAddress());
-					//描画！
-					//commandList->DrawInstanced(kSubdivision * kSubdivision * 6, 1, 0, 0);
-					// ModelDataの描画
-					commandList->DrawInstanced(UINT(modelData.vertices.size()), 1, 0, 0);
-		#pragma endregion
-		
-					commandList->IASetIndexBuffer(&indexBufferViewSprite);
-					commandList->DrawIndexedInstanced(6, 1, 0, 0, 0);
-		
-		
-		#pragma region Spriteの描画
-					commandList->IASetVertexBuffers(0, 1, &vertexBufferViewSprite);
-					commandList->SetGraphicsRootConstantBufferView(0, transformationMatrixResourceSprite->GetGPUVirtualAddress());
-					//TransFomationMatrixBufferの場所を設定
-					commandList->SetGraphicsRootConstantBufferView(1, transformationMatrixResourceSprite->GetGPUVirtualAddress());
-					commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandleGPU);
-					commandList->SetGraphicsRootConstantBufferView(0, materialResourceSprite->GetGPUVirtualAddress());
-					//描画！
-					commandList->DrawInstanced(6, 1, 0, 0);
-	
-		
-		#pragma region コマンドをキックする
-					
-		
-					swapChain->Present(1, 0);
-		
-		
+
+#pragma region コマンドを積む
+
+		//			//RootSignatureを設定。POSに設定しているけどベット設定が必要
+		//			commandList->SetGraphicsRootSignature(rootSignature.Get());
+		//			commandList->SetPipelineState(graphicsPipelineState.Get());
+		//#pragma endregion
+		//
+		//
+		//#pragma region 三角形の描画
+		//			commandList->IASetVertexBuffers(0, 1, &vertexBufferView);
+		//			//現状を設定。POSに設定しているものとはまた別。おなじ物を設定すると考えておけばいい
+		//			commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		//			commandList->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress());
+		//			//wvp用のCBufferの場所を設定
+		//			commandList->SetGraphicsRootConstantBufferView(1, transformationMatrixResource->GetGPUVirtualAddress());
+		//			commandList->SetGraphicsRootDescriptorTable(2, useMonsterBall ? textureSrvHandleGPU2 : textureSrvHandleGPU);
+		//			commandList->SetGraphicsRootConstantBufferView(3, directionalLightSprite->GetGPUVirtualAddress());
+		//			//描画！
+		//			//commandList->DrawInstanced(kSubdivision * kSubdivision * 6, 1, 0, 0);
+		//			// ModelDataの描画
+		//			commandList->DrawInstanced(UINT(modelData.vertices.size()), 1, 0, 0);
+		//#pragma endregion
+		//
+		//			commandList->IASetIndexBuffer(&indexBufferViewSprite);
+		//			commandList->DrawIndexedInstanced(6, 1, 0, 0, 0);
+		//
+		//
+		//#pragma region Spriteの描画
+		//			commandList->IASetVertexBuffers(0, 1, &vertexBufferViewSprite);
+		//			commandList->SetGraphicsRootConstantBufferView(0, transformationMatrixResourceSprite->GetGPUVirtualAddress());
+		//			//TransFomationMatrixBufferの場所を設定
+		//			commandList->SetGraphicsRootConstantBufferView(1, transformationMatrixResourceSprite->GetGPUVirtualAddress());
+		//			commandList->SetGraphicsRootDescriptorTable(2, textureSrvHandleGPU);
+		//			commandList->SetGraphicsRootConstantBufferView(0, materialResourceSprite->GetGPUVirtualAddress());
+		//			//描画！
+		//			commandList->DrawInstanced(6, 1, 0, 0);
+
+
+
+		dxCommon->PostDraw();
+
+
 	}
 
 
