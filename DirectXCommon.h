@@ -57,6 +57,17 @@ public: // メンバ関数
 
 	ID3D12Device* GetDevice() { return device.Get(); }
 	ID3D12GraphicsCommandList* GetCommandList()const { return commandList.Get(); }
+
+	const D3D12_DEPTH_STENCIL_DESC& GetDepthStencilDesc() const {
+		return depthStencilDesc;
+	}
+
+	ID3D12Resource* GetTextureResource3() const { return textureResources3; }
+
+	ID3D12Resource* GetTextureResource2() const { return textureResources2; }
+
+	ID3D12Resource* GetTextureResource() const { return textureResources; }
+	
 	
 
 	Microsoft::WRL::ComPtr<IDxcBlob> CompileShader(const std::wstring& filePath,const wchar_t* profile);
@@ -178,6 +189,9 @@ private:
 	IDxcUtils* dxcUtils = nullptr;
 	IDxcCompiler3* dxcCompiler = nullptr;
 
+	ID3D12Resource* textureResources3;
+	ID3D12Resource* textureResources2;
+	ID3D12Resource* textureResources;
 
 	// SRV
 	D3D12_CPU_DESCRIPTOR_HANDLE GetSRVCPUDescriptorHandle(uint32_t index);

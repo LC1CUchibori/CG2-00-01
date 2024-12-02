@@ -409,7 +409,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		graphicsPipelineStateDesc.SampleDesc.Count = 1;
 		graphicsPipelineStateDesc.SampleMask = D3D12_DEFAULT_SAMPLE_MASK;
 		// DepthStencilの設定
-		graphicsPipelineStateDesc.DepthStencilState = dxCommon->depthStencilDesc;
+		graphicsPipelineStateDesc.DepthStencilState = dxCommon->GetDepthStencilDesc();
 		graphicsPipelineStateDesc.DSVFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
 		// 実際に生成
 		Microsoft::WRL::ComPtr<ID3D12PipelineState> graphicsPipelineState = nullptr;
@@ -497,12 +497,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	// 頂点リソースを作成
 	Microsoft::WRL::ComPtr<ID3D12Resource> vertexModelResource = dxCommon->CreateBufferResource(sizeof(VertexData) * modelData.vertices.size());
 	// 頂点バッファビューを作成する
-	D3D12_VERTEX_BUFFER_VIEW vertexBufferView;
+	vertexBufferView;
 	vertexBufferView.BufferLocation = vertexResource->GetGPUVirtualAddress(); // リソース先頭のアドレスから得る
 	vertexBufferView.SizeInBytes = UINT(sizeof(VertexData) * modelData.vertices.size()); // 使用するリソースのサイズは頂点のサイズ
 	vertexBufferView.StrideInBytes = sizeof(VertexData); // 頂点あたりのサイズ
 	// 頂点バッファリソースデータを書き込む
-	VertexData* vertexData = nullptr;
+	 vertexData = nullptr;
 	vertexResource->Map(0, nullptr, reinterpret_cast<void**>(&vertexData)); // 書き込むためのアドレスを取得
 	std::memcpy(vertexData, modelData.vertices.data(), sizeof(VertexData) * modelData.vertices.size()); // 頂点データをリソースにコピー
 
@@ -660,7 +660,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		DirectX::ScratchImage mipImages3 =dxCommon->LoadTexture("Resources/monsterBall.png");
 		const DirectX::TexMetadata& metadata3 = mipImages3.GetMetadata();
 		Microsoft::WRL::ComPtr<ID3D12Resource> textureResources3 = dxCommon->CreateTextureResource(dxCommon->GetDevice(), metadata3);
-		Microsoft::WRL::ComPtr<ID3D12Resource> intermediateResource3 = dxCommon->UploadTextureData(textureResources3, mipImages3, dxCommon->GetDevice(), dxCommon->GetCommandList();
+		Microsoft::WRL::ComPtr<ID3D12Resource> intermediateResource3 = dxCommon->UploadTextureData(dxCommon->GetTextureResource3(), mipImages3);
 	#pragma endregion<
 	
 	#pragma region Texture2を読む
@@ -668,7 +668,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		DirectX::ScratchImage mipImages2 = dxCommon->LoadTexture(modelData.material.textureFilePath);
 		const DirectX::TexMetadata& metadata2 = mipImages2.GetMetadata();
 		Microsoft::WRL::ComPtr<ID3D12Resource> textureResources2 = dxCommon->CreateTextureResource(dxCommon->GetDevice(), metadata2);
-		Microsoft::WRL::ComPtr<ID3D12Resource> intermediateResource2 = dxCommon->UploadTextureData(textureResources2, mipImages2, dxCommon->GetDevice(), dxCommon->GetCommandList();
+		Microsoft::WRL::ComPtr<ID3D12Resource> intermediateResource2 = dxCommon->UploadTextureData(dxCommon->GetTextureResource2(), mipImages2);
 	#pragma endregion
 	
 	#pragma region Texturを読む
@@ -676,7 +676,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		DirectX::ScratchImage mipImages = dxCommon->LoadTexture("Resources/uvChecker.png");
 		const DirectX::TexMetadata& metadata = mipImages.GetMetadata();
 		Microsoft::WRL::ComPtr<ID3D12Resource> textureResource = dxCommon->CreateTextureResource(dxCommon->GetDevice(), metadata);
-		Microsoft::WRL::ComPtr<ID3D12Resource> intermediateResource =dxCommon->UploadTextureData(textureResource, mipImages, dxCommon->GetDevice(), dxCommon->GetCommandList());
+		Microsoft::WRL::ComPtr<ID3D12Resource> intermediateResource =dxCommon->UploadTextureData(dxCommon->GetTextureResource(), mipImages);
 	#pragma endregion 
 	
 	#pragma region ShaderResourceView

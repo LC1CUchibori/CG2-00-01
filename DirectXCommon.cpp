@@ -475,7 +475,7 @@ ID3D12Resource* DirectXCommon::CreateDepthStencilTexturResource(ID3D12Device* de
 	assert(SUCCEEDED(hr));
 
 	// DepthStencilTextureをウィンドウのサイズで作成
-	ID3D12Resource* depthStencilResource = CreateDepthStencilTexturResource(device, WinApp::kClientWidth, WinApp::kClientHeight);
+	ID3D12Resource* depthStencilResource = CreateDepthStencilTexturResource(device, width, height);
 }
 
 Microsoft::WRL::ComPtr<IDxcBlob> DirectXCommon::CompileShader(const std::wstring& filePath, const wchar_t* profile)
