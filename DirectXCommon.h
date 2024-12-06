@@ -146,6 +146,7 @@ private:
 	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> dsvDescriptorHeap;
 	// depthStencilResourece
 	Microsoft::WRL::ComPtr<ID3D12Resource> depthStencilResource;
+
 	// fence
 	Microsoft::WRL::ComPtr<ID3D12Fence> fence;
 	

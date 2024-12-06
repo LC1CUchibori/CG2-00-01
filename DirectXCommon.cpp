@@ -474,8 +474,10 @@ ID3D12Resource* DirectXCommon::CreateDepthStencilTexturResource(ID3D12Device* de
 		IID_PPV_ARGS(&resource)); // 作成するResourceに代入するインターフェイス
 	assert(SUCCEEDED(hr));
 
+
+	return resource;
 	// DepthStencilTextureをウィンドウのサイズで作成
-	ID3D12Resource* depthStencilResource = CreateDepthStencilTexturResource(device, width, height);
+	//ID3D12Resource* depthStencilResource = CreateDepthStencilTexturResource(device, width, height);
 }
 
 Microsoft::WRL::ComPtr<IDxcBlob> DirectXCommon::CompileShader(const std::wstring& filePath, const wchar_t* profile)
@@ -603,7 +605,7 @@ Microsoft::WRL::ComPtr<ID3D12Resource> DirectXCommon::UploadTextureData(ID3D12Re
 	std::vector<D3D12_SUBRESOURCE_DATA> subresouces;
 	DirectX::PrepareUpload(device.Get(), mipImages.GetImages(), mipImages.GetImageCount(), mipImages.GetMetadata(), subresouces);
 	uint64_t intermediateSize = GetRequiredIntermediateSize(texture, 0, UINT(subresouces.size()));
-	Microsoft::WRL::ComPtr <ID3D12Resource> intermediateResource = CreateBufferResource( intermediateSize);
+	intermediateResource = CreateBufferResource(intermediateSize);
 	UpdateSubresources(commandList.Get(), texture, intermediateResource.Get(), 0, 0, UINT(subresouces.size()), subresouces.data());
 
 	D3D12_RESOURCE_BARRIER barrier{};
