@@ -125,8 +125,8 @@ Matrix4x4 MakeRotateXMatrix(const float radian) {
 	Matrix4x4 result = { 1,0,0,0,
 		0,std::cos(radian),std::sin(radian),0,
 		0,-std::sin(radian),std::cos(radian),0,
-		0,0,0,1 };
-
+		0,0,0,1 
+	};
 	return result;
 }
 
@@ -135,7 +135,8 @@ Matrix4x4 MakeRatateYMatrix(const float radian) {
 	Matrix4x4 result = { std::cos(radian),0,-std::sin(radian),0,
 		0,1,0,0,
 		std::sin(radian),0,std::cos(radian),0,
-		0,0,0,1 };
+		0,0,0,1
+	};
 
 	return result;
 }
@@ -145,7 +146,8 @@ Matrix4x4 MakeRatateZMatrix(const float radian) {
 	Matrix4x4 result = { std::cos(radian),std::sin(radian),0,0,
 		-std::sin(radian),std::cos(radian),0,0,
 		0,0,1,0,
-		0,0,0,1 };
+		0,0,0,1 
+	};
 
 	return result;
 }
