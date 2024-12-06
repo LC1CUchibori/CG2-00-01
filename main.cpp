@@ -1023,6 +1023,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		particles[index].transform.scale = { 1.0f,1.0f,1.0f };
 		particles[index].transform.rotate = { 0.0f,0.0f,0.0f };
 		particles[index].transform.translata = { index * 0.1f,index * 0.1f,index * 0.1f };
+
+		std::uniform_real_distribution<float> distribution(-1.0f, 1.0f);
+		// 位置と速度を[-1,1]でランダム初期化
+		particles[index].transform.translata = { distribution(randomEngine),distribution(randomEngine),distribution(randomEngine) };
+		particles[index].velocity = { distribution(randomEngine),distribution(randomEngine),distribution(randomEngine) };
 	}
 
 
@@ -1284,11 +1289,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				particles[index].velocity = { 0.0f,1.0f,0.0f};
 				const float kDeltaTime = 1.0f / 60.0f;
 				particles[index].transform.translata += particles[index].velocity * kDeltaTime;
-			
-				std::uniform_real_distribution<float> distribution(-1.0f, 1.0f);
-				// 位置と速度を[-1,1]でランダム初期化
-				particles[index].transform.translata = { distribution(randomEngine),distribution(randomEngine),distribution(randomEngine) };
-				particles[index].velocity = { distribution(randomEngine),distribution(randomEngine),distribution(randomEngine) };
 			}
 
 
