@@ -1320,12 +1320,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				float alpha = 1.0f - (particles[index].currentTime / particles[index].lifeTime);
 				//Matrix4x4 worldMatrix = MakeAffineMatrix(particles[index].transform.scale, particles[index].transform.rotate, particles[index].transform.translata);
 				Matrix4x4 viewProjectionMatrix = Multiply(viewMatrix, projectionMatrix);
-				Matrix4x4 worldViewProjectionMatrix = Multiply(worldMatrix,viewProjectionMatrix );
+				Matrix4x4 worldViewProjectionMatrix = Multiply(worldMatrix, viewProjectionMatrix);
 				Matrix4x4 backToFromMatrix = MakeRatateYMatrix(std::numbers::pi_v<float>);
-				Matrix4x4 billboardMatrix = Multiply(backToFromMatrix, cameraMatrix);
+				Matrix4x4 billboardMatrix =  Multiply(backToFromMatrix, cameraMatrix);
 				billboardMatrix.m[3][0] = 0.0f;
 				billboardMatrix.m[3][1] = 0.0f;
-				billboardMatrix.m[3][1] = 0.0f;
+				billboardMatrix.m[3][2] = 0.0f;
 				Matrix4x4 scaleMatrix = MakeScaleMatrix(particles[index].transform.scale);
 				Matrix4x4 RotateMatrix = MakeRotateXMatrix(particles[index].transform.rotate.x) *
 					MakeRatateYMatrix(particles[index].transform.rotate.y) *

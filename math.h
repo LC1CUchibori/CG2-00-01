@@ -111,8 +111,10 @@ Matrix4x4 MakeIdentity4x4() {
 
 Matrix4x4 MakeScaleMatrix(const Vector3& scale) {
 	Matrix4x4 result = {
-		scale.x, 0.0f, 0.0f,    0.0f, 0.0f, scale.y, 0.0f, 0.0f,
-		0.0f,    0.0f, scale.z, 0.0f, 0.0f, 0.0f,    0.0f, 1.0f,
+		scale.x, 0.0f, 0.0f, 0.0f, 
+		0.0f, scale.y, 0.0f, 0.0f,
+		0.0f, 0.0f, scale.z, 0.0f,
+		0.0f, 0.0f, 0.0f, 1.0f,
 	};
 	return result;
 }
@@ -148,8 +150,10 @@ Matrix4x4 MakeRatateZMatrix(const float radian) {
 
 Matrix4x4 MakeTranslateMatrix(const Vector3& translate) {
 	Matrix4x4 result = {
-		1.0f, 0.0f, 0.0f, 0.0f, 0.0f,        1.0f,        0.0f,        0.0f,
-		0.0f, 0.0f, 1.0f, 0.0f, translate.x, translate.y, translate.z, 1.0f,
+		1.0f, 0.0f, 0.0f, 0.0f, 
+		0.0f, 1.0f, 0.0f, 0.0f,
+		0.0f, 0.0f, 1.0f, 0.0f, 
+		translate.x, translate.y, translate.z, 1.0f,
 	};
 	return result;
 }
