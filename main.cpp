@@ -188,7 +188,7 @@ Transform transform{ {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f},{0.0f,0.0f,0.0f } };
 Transform cameraTransform{ 
 	{1.0f,1.0f,1.0f},
 	{std::numbers::pi_v<float>/3.0f,std::numbers::pi_v<float>,0.0f},
-	{0.0f,23.0f,10.0f} };
+	{0.0f,0.0f,-5.0f} };
 #pragma endregion
 
 #pragma region spriteTransform変数
@@ -1318,18 +1318,14 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				}
 				const float kDeltaTime = 1.0f / 60.0f;
 				float alpha = 1.0f - (particles[index].currentTime / particles[index].lifeTime);
-				bool useBillboard = false;
 				//Matrix4x4 worldMatrix = MakeAffineMatrix(particles[index].transform.scale, particles[index].transform.rotate, particles[index].transform.translata);
 				Matrix4x4 viewProjectionMatrix = Multiply(viewMatrix, projectionMatrix);
 				Matrix4x4 worldViewProjectionMatrix = Multiply(worldMatrix, viewProjectionMatrix);
 				Matrix4x4 backToFromMatrix = MakeRatateYMatrix(std::numbers::pi_v<float>);
-				Matrix4x4 billboardMatrix = MakeIdentity4x4();
-				if (useBillboard) {
-					billboardMatrix = Multiply(backToFromMatrix, cameraMatrix);
+				Matrix4x4 billboardMatrix = Multiply(backToFromMatrix, cameraMatrix);
 					billboardMatrix.m[3][0] = 0.0f;
 					billboardMatrix.m[3][1] = 0.0f;
 					billboardMatrix.m[3][2] = 0.0f;
-				}
 				Matrix4x4 scaleMatrix = MakeScaleMatrix(particles[index].transform.scale);
 				Matrix4x4 RotateMatrix = MakeRotateXMatrix(particles[index].transform.rotate.x) *
 					MakeRatateYMatrix(particles[index].transform.rotate.y) *
