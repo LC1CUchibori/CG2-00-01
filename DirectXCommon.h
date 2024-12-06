@@ -58,6 +58,9 @@ public: // メンバ関数
 	ID3D12Device* GetDevice() { return device.Get(); }
 	ID3D12GraphicsCommandList* GetCommandList()const { return commandList.Get(); }
 
+	//ID3D12Resource* GetTexture() { return texture.Get(); }
+
+
 	const D3D12_DEPTH_STENCIL_DESC& GetDepthStencilDesc() const {
 		return depthStencilDesc;
 	}
@@ -76,6 +79,7 @@ public: // メンバ関数
 
 	Microsoft::WRL::ComPtr<ID3D12Resource> CreateTextureResource(ID3D12Device* device, const DirectX::TexMetadata& metadata);
 
+	[[nodiscard]]
 	Microsoft::WRL::ComPtr<ID3D12Resource> UploadTextureData(ID3D12Resource* texture, const DirectX::ScratchImage& mipimages);
 
 	static DirectX::ScratchImage LoadTexture(const std::string& filePath);
@@ -123,6 +127,8 @@ private:
 
 	// DirectX12デバイス
 	Microsoft::WRL::ComPtr<ID3D12Device> device;
+
+	//Microsoft::WRL::ComPtr<ID3D12Resource> texture;
 	// DXGIファクトリ
 	Microsoft::WRL::ComPtr<IDXGIFactory7> dxgiFactory;
 	// infoQueue

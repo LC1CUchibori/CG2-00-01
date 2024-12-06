@@ -407,7 +407,7 @@ void DirectXCommon::PostDraw()
 #pragma endregion
 
 #pragma region GPUコマンドの実行
-	Microsoft::WRL::ComPtr<ID3D12CommandList> commandLists[] = { commandList };
+	Microsoft::WRL::ComPtr<ID3D12CommandList> commandLists[] = { commandList.Get()};
 	commandQueue->ExecuteCommandLists(1, commandLists->GetAddressOf());
 #pragma endregion
 
