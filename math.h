@@ -35,6 +35,7 @@ const Vector3 operator*(const Vector3& v, float s) {
 	return temp *= s;
 }
 
+
 struct Vector2
 {
 	float x;
@@ -87,7 +88,6 @@ struct ModelData{
 	std::vector<VertexData> vertices;
 	MaterialData material;
 };
-
 
 Matrix4x4 MakeIdentity4x4() {
 	Matrix4x4 result;
@@ -193,6 +193,11 @@ Matrix4x4 Multiply(const Matrix4x4& m1, const Matrix4x4& m2) {
 
 	return result; 
 }
+
+Matrix4x4 operator*(const Matrix4x4& m1, const Matrix4x4& m2) {
+	return Multiply(m1, m2);
+}
+
 
 Matrix4x4 MakeAffineMatrix(const Vector3& scale, const Vector3& rotate, const Vector3& translate) {
 	Matrix4x4 ScaleResult = MakeScaleMatrix(scale);

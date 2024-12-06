@@ -185,7 +185,10 @@ Transform transform{ {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f},{0.0f,0.0f,0.0f } };
 #pragma endregion
 
 #pragma region cameraTransform変数
-Transform cameraTransform{ {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f},{0.0f,0.0f,-10.0f} };
+Transform cameraTransform{ 
+	{1.0f,1.0f,1.0f},
+	{std::numbers::pi_v<float>/3.0f,std::numbers::pi_v<float>,0.0f},
+	{0.0f,23.0f,10.0f} };
 #pragma endregion
 
 #pragma region spriteTransform変数
@@ -1315,7 +1318,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				}
 				const float kDeltaTime = 1.0f / 60.0f;
 				float alpha = 1.0f - (particles[index].currentTime / particles[index].lifeTime);
-				Matrix4x4 worldMatrix = MakeAffineMatrix(particles[index].transform.scale, particles[index].transform.rotate, particles[index].transform.translata);
+				//Matrix4x4 worldMatrix = MakeAffineMatrix(particles[index].transform.scale, particles[index].transform.rotate, particles[index].transform.translata);
 				Matrix4x4 viewProjectionMatrix = Multiply(viewMatrix, projectionMatrix);
 				Matrix4x4 worldViewProjectionMatrix = Multiply(worldMatrix,viewProjectionMatrix );
 				Matrix4x4 backToFromMatrix = MakeRatateYMatrix(std::numbers::pi_v<float>);
@@ -1323,7 +1326,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				billboardMatrix.m[3][0] = 0.0f;
 				billboardMatrix.m[3][1] = 0.0f;
 				billboardMatrix.m[3][1] = 0.0f;
-				Matrix4x4 worldMatrix
+				Matrix4x4 scaleMatrix = MakeScaleMatrix(particles[index].transform.scale);
+				Matrix4x4 RotateMatrix = MakeRotateXMatrix(particles[index].transform.rotate.x) *
+					MakeRatateYMatrix(particles[index].transform.rotate.y) *
+					MakeRatateZMatrix(particles[index].transform.rotate.z);
+				Matrix4x4 translateMatrix = MakeTranslateMatrix(particles[index].transform.translata);
+				Matrix4x4 worldMatrix = scaleMatrix * billboardMatrix * translateMatrix;
 				particles[index].transform.translata += particles[index].velocity * kDeltaTime;
 				particles[index].currentTime += kDeltaTime;
 				instancingData[numInstance].WVP = worldViewProjectionMatrix;
@@ -1382,6 +1390,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				ImGui::DragFloat2("UVTranslate", &transformSprite.translata.x, -5.0f, 5.0f);
 				ImGui::DragFloat2("UVScale", &transformSprite.scale.x, 0.01f, -10.0f, 10.0f);
 				ImGui::SliderAngle("UVRotate", &transformSprite.rotate.z);
+			}
+			if (ImGui::CollapsingHeader("CameraTransform")) {
+				ImGui::DragFloat2("CameraTranslate", &cameraTransform.translata.x, -5.0f, 5.0f);
+				ImGui::DragFloat2("CmaeraScale", &cameraTransform.scale.x, 0.01f, -10.0f, 10.0f);
+				ImGui::SliderAngle("CameraRotate", &cameraTransform.rotate.z);
 			}
 			// 切り替え
 			ImGui::Checkbox("useMonsterBall", &useMonsterBall);
