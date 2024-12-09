@@ -6,7 +6,7 @@ class SpriteCommon
 {
 public:
 	// 初期化
-	void Initialize(DirectXCommon* dxCommon);
+	void Initialize();
 
 	// 共通描画設定
 	void CommonDraw();
