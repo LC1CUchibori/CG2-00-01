@@ -1,5 +1,6 @@
 #include "DirectXCommon.h"
 #include "externals/DirectXTex/d3dx12.h"
+#include <thread>
 
 
 #pragma comment(lib,"d3d12.lib")
@@ -14,6 +15,9 @@ void DirectXCommon::Initialize(WinApp*winApp)
 
 	// メンバ変数に記録
 	this->winApp = winApp;
+
+	// FPS固定初期化
+	InitializeFixFPS();
 
 	DeviceInitialize();
 	CommandInitialize();
@@ -431,6 +435,9 @@ void DirectXCommon::PostDraw()
 	fenceValue++;
 #pragma endregion
 
+	// FPS固定
+	UpdateFixFPS();
+
 #pragma region コマンドアロケーターのリセット
 	hr = commandAllocator->Reset();
 	assert(SUCCEEDED(hr));
@@ -557,7 +564,7 @@ Microsoft::WRL::ComPtr<ID3D12Resource> DirectXCommon::CreateBufferResource(size_
 	vertexResourceDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
 
 	Microsoft::WRL::ComPtr<ID3D12Resource> vertexResource = nullptr;
-	HRESULT hr = device->CreateCommittedResource(
+	HRESULT hr = device.Get()->CreateCommittedResource(
 		&uploadHeapProperties,
 		D3D12_HEAP_FLAG_NONE,
 		&vertexResourceDesc,
@@ -566,7 +573,7 @@ Microsoft::WRL::ComPtr<ID3D12Resource> DirectXCommon::CreateBufferResource(size_
 		IID_PPV_ARGS(&vertexResource));
 	assert(SUCCEEDED(hr));
 
-	return vertexResource;
+	return resource;
 }
 
 Microsoft::WRL::ComPtr<ID3D12Resource> DirectXCommon::CreateTextureResource(ID3D12Device*device,const DirectX::TexMetadata&metadata)
@@ -660,6 +667,36 @@ D3D12_CPU_DESCRIPTOR_HANDLE DirectXCommon::GetDSVCPUDescriptorHandle(uint32_t in
 D3D12_GPU_DESCRIPTOR_HANDLE DirectXCommon::GetDSVGPUDescriptorHandle(uint32_t index)
 {
 	return GetGPUDescriptorHandle(srvDescriptorHeap, descriptorSizeDSV, index);
+}
+
+void DirectXCommon::InitializeFixFPS()
+{
+	// 現在時間を記録する
+	referrence_ = std::chrono::steady_clock::now();
+}
+
+void DirectXCommon::UpdateFixFPS()
+{
+	// 1/60秒のぴったり時間
+	const std::chrono::microseconds kMinTime(uint64_t(1000000.0f / 60.0f));
+	// 1/60秒よりわずかに短い時間
+	const std::chrono::microseconds kMinCheckTime(uint64_t(1000000.0f / 65.0f));
+
+	// 現在時間を取得する
+	std::chrono::steady_clock::time_point now = std::chrono::steady_clock::now();
+	//前回記録からの経過時間を取得する
+	std::chrono::microseconds elapsed = std::chrono::duration_cast<std::chrono::microseconds>(now - referrence_);
+
+	// 1/60秒 (よりわずかに短い時間) 経っていない場合
+	if (elapsed < kMinTime) {
+		// 1/60秒経過するまでの微小なスリープを繰り返す
+		while (std::chrono::steady_clock::now() - referrence_ < kMinTime) {
+			// 1マイクロ秒スリープ
+			std::this_thread::sleep_for(std::chrono::microseconds(1));
+		}
+	}
+	// 現在の時間を記録する
+	referrence_ = std::chrono::steady_clock::now();
 }
 
 

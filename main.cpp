@@ -510,7 +510,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 
 #pragma region 平行光源をShderで使う
-	Microsoft::WRL::ComPtr<ID3D12Resource> directionalLightSprite =dxCommon-> CreateBufferResource(sizeof(DirectionalLighting));
+	Microsoft::WRL::ComPtr<ID3D12Resource> directionalLightSprite =dxCommon->CreateBufferResource(sizeof(DirectionalLighting));
 
 	DirectionalLighting* directionalLightData = nullptr;
 
