@@ -58,18 +58,18 @@ public: // メンバ関数
 	ID3D12Device* GetDevice() { return device.Get(); }
 	ID3D12GraphicsCommandList* GetCommandList()const { return commandList.Get(); }
 
-	//ID3D12Resource* GetTexture() { return texture.Get(); }
+	ID3D12Resource* GetTexture(){ return texture.Get(); }
 
 
 	const D3D12_DEPTH_STENCIL_DESC& GetDepthStencilDesc() const {
 		return depthStencilDesc;
 	}
 
-	ID3D12Resource* GetTextureResource3() const { return textureResources3; }
+	ID3D12Resource* GetTextureResource3() const { return textureResources3.Get(); }
 
-	ID3D12Resource* GetTextureResource2() const { return textureResources2; }
+	ID3D12Resource* GetTextureResource2() const { return textureResources2.Get(); }
 
-	ID3D12Resource* GetTextureResource() const { return textureResources; }
+	ID3D12Resource* GetTextureResource() const { return textureResources.Get(); }
 	
 	
 
@@ -128,7 +128,7 @@ private:
 	// DirectX12デバイス
 	Microsoft::WRL::ComPtr<ID3D12Device> device;
 
-	//Microsoft::WRL::ComPtr<ID3D12Resource> texture;
+	Microsoft::WRL::ComPtr<ID3D12Resource> texture;
 	// DXGIファクトリ
 	Microsoft::WRL::ComPtr<IDXGIFactory7> dxgiFactory;
 	// infoQueue
@@ -196,9 +196,9 @@ private:
 	IDxcUtils* dxcUtils = nullptr;
 	IDxcCompiler3* dxcCompiler = nullptr;
 
-	ID3D12Resource* textureResources3;
-	ID3D12Resource* textureResources2;
-	ID3D12Resource* textureResources;
+	Microsoft::WRL::ComPtr<ID3D12Resource> textureResources3;
+	Microsoft::WRL::ComPtr<ID3D12Resource> textureResources2;
+	Microsoft::WRL::ComPtr<ID3D12Resource> textureResources;
 
 	// SRV
 	D3D12_CPU_DESCRIPTOR_HANDLE GetSRVCPUDescriptorHandle(uint32_t index);

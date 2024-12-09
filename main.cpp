@@ -660,7 +660,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		DirectX::ScratchImage mipImages3 =dxCommon->LoadTexture("Resources/monsterBall.png");
 		const DirectX::TexMetadata& metadata3 = mipImages3.GetMetadata();
 		Microsoft::WRL::ComPtr<ID3D12Resource> textureResources3 = dxCommon->CreateTextureResource(dxCommon->GetDevice(), metadata3);
-		Microsoft::WRL::ComPtr<ID3D12Resource> intermediateResource3 = dxCommon->UploadTextureData(dxCommon->GetTextureResource3(), mipImages3);
+		Microsoft::WRL::ComPtr<ID3D12Resource> intermediateResource3 = dxCommon->UploadTextureData(textureResources3.Get(), mipImages3);
 	#pragma endregion<
 	
 	#pragma region Texture2を読む
@@ -668,7 +668,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		DirectX::ScratchImage mipImages2 = dxCommon->LoadTexture(modelData.material.textureFilePath);
 		const DirectX::TexMetadata& metadata2 = mipImages2.GetMetadata();
 		Microsoft::WRL::ComPtr<ID3D12Resource> textureResources2 = dxCommon->CreateTextureResource(dxCommon->GetDevice(), metadata2);
-		Microsoft::WRL::ComPtr<ID3D12Resource> intermediateResource2 = dxCommon->UploadTextureData(dxCommon->GetTextureResource2(), mipImages2);
+		Microsoft::WRL::ComPtr<ID3D12Resource> intermediateResource2 = dxCommon->UploadTextureData(textureResources2.Get(), mipImages2);
 	#pragma endregion
 	
 	#pragma region Texturを読む
@@ -676,7 +676,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		DirectX::ScratchImage mipImages = dxCommon->LoadTexture("Resources/uvChecker.png");
 		const DirectX::TexMetadata& metadata = mipImages.GetMetadata();
 		Microsoft::WRL::ComPtr<ID3D12Resource> textureResource = dxCommon->CreateTextureResource(dxCommon->GetDevice(), metadata);
-		Microsoft::WRL::ComPtr<ID3D12Resource> intermediateResource =dxCommon->UploadTextureData(dxCommon->GetTextureResource(), mipImages);
+		Microsoft::WRL::ComPtr<ID3D12Resource> intermediateResource =dxCommon->UploadTextureData(textureResource.Get(), mipImages);
 	#pragma endregion 
 	
 	#pragma region ShaderResourceView
