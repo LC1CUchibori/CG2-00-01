@@ -1,5 +1,7 @@
 #include "WinApp.h"
 
+#pragma comment(lib,"winmm.lib")
+
 LRESULT WinApp::WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
 	if (ImGui_ImplWin32_WndProcHandler(hwnd, msg, wparam, lparam)) {
@@ -52,7 +54,7 @@ void WinApp::Initialize()
 
 	ShowWindow(hwnd, SW_SHOW);
 
-	
+	timeBeginPeriod(1);
 }
 
 void WinApp::Update()
