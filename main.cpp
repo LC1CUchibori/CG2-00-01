@@ -844,43 +844,43 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 
 		dxCommon->PreDraw();
-//
-//#pragma region コマンドを積む
-//
-//					//RootSignatureを設定。POSに設定しているけどベット設定が必要
-//					dxCommon->GetCommandList()->SetGraphicsRootSignature(rootSignature.Get());
-//					dxCommon->GetCommandList()->SetPipelineState(graphicsPipelineState.Get());
-//		#pragma endregion
-//		
+
+#pragma region コマンドを積む
+
+					//RootSignatureを設定。POSに設定しているけどベット設定が必要
+					dxCommon->GetCommandList()->SetGraphicsRootSignature(rootSignature.Get());
+					dxCommon->GetCommandList()->SetPipelineState(graphicsPipelineState.Get());
+		#pragma endregion
 		
-		//#pragma region 三角形の描画
-		//			dxCommon->GetCommandList()->IASetVertexBuffers(0, 1, &vertexBufferView);
-		//			//現状を設定。POSに設定しているものとはまた別。おなじ物を設定すると考えておけばいい
-		//			dxCommon->GetCommandList()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-		//			dxCommon->GetCommandList()->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress());
-		//			//wvp用のCBufferの場所を設定
-		//			dxCommon->GetCommandList()->SetGraphicsRootConstantBufferView(1, transformationMatrixResource->GetGPUVirtualAddress());
-		//			dxCommon->GetCommandList()->SetGraphicsRootDescriptorTable(2, useMonsterBall ? textureSrvHandleGPU2 : textureSrvHandleGPU);
-		//			dxCommon->GetCommandList()->SetGraphicsRootConstantBufferView(3, directionalLightSprite->GetGPUVirtualAddress());
-		//			//描画！
-		//			//commandList->DrawInstanced(kSubdivision * kSubdivision * 6, 1, 0, 0);
-		//			// ModelDataの描画
-		//			dxCommon->GetCommandList()->DrawInstanced(UINT(modelData.vertices.size()), 1, 0, 0);
-		//#pragma endregion
-		//
-		//			dxCommon->GetCommandList()->IASetIndexBuffer(&indexBufferViewSprite);
-		//			dxCommon->GetCommandList()->DrawIndexedInstanced(6, 1, 0, 0, 0);
-		//
-		//
+		
+		#pragma region 三角形の描画
+					dxCommon->GetCommandList()->IASetVertexBuffers(0, 1, &vertexBufferView);
+					//現状を設定。POSに設定しているものとはまた別。おなじ物を設定すると考えておけばいい
+					dxCommon->GetCommandList()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+					dxCommon->GetCommandList()->SetGraphicsRootConstantBufferView(0, materialResource->GetGPUVirtualAddress());
+					//wvp用のCBufferの場所を設定
+					dxCommon->GetCommandList()->SetGraphicsRootConstantBufferView(1, transformationMatrixResource->GetGPUVirtualAddress());
+					dxCommon->GetCommandList()->SetGraphicsRootDescriptorTable(2, useMonsterBall ? textureSrvHandleGPU2 : textureSrvHandleGPU);
+					dxCommon->GetCommandList()->SetGraphicsRootConstantBufferView(3, directionalLightSprite->GetGPUVirtualAddress());
+					//描画！
+					//commandList->DrawInstanced(kSubdivision * kSubdivision * 6, 1, 0, 0);
+					// ModelDataの描画
+					dxCommon->GetCommandList()->DrawInstanced(UINT(modelData.vertices.size()), 1, 0, 0);
+		#pragma endregion
+		
+					dxCommon->GetCommandList()->IASetIndexBuffer(&indexBufferViewSprite);
+					dxCommon->GetCommandList()->DrawIndexedInstanced(6, 1, 0, 0, 0);
+		
+		
 		#pragma region Spriteの描画
-					//dxCommon->GetCommandList()->IASetVertexBuffers(0, 1, &vertexBufferViewSprite);
-					//dxCommon->GetCommandList()->SetGraphicsRootConstantBufferView(0, transformationMatrixResourceSprite->GetGPUVirtualAddress());
-					////TransFomationMatrixBufferの場所を設定
-					//dxCommon->GetCommandList()->SetGraphicsRootConstantBufferView(1, transformationMatrixResourceSprite->GetGPUVirtualAddress());
-					//dxCommon->GetCommandList()->SetGraphicsRootDescriptorTable(2, textureSrvHandleGPU);
-					//dxCommon->GetCommandList()->SetGraphicsRootConstantBufferView(0, materialResourceSprite->GetGPUVirtualAddress());
-					////描画！
-					//dxCommon->GetCommandList()->DrawInstanced(6, 1, 0, 0);
+					dxCommon->GetCommandList()->IASetVertexBuffers(0, 1, &vertexBufferViewSprite);
+					dxCommon->GetCommandList()->SetGraphicsRootConstantBufferView(0, transformationMatrixResourceSprite->GetGPUVirtualAddress());
+					//TransFomationMatrixBufferの場所を設定
+					dxCommon->GetCommandList()->SetGraphicsRootConstantBufferView(1, transformationMatrixResourceSprite->GetGPUVirtualAddress());
+					dxCommon->GetCommandList()->SetGraphicsRootDescriptorTable(2, textureSrvHandleGPU);
+					dxCommon->GetCommandList()->SetGraphicsRootConstantBufferView(0, materialResourceSprite->GetGPUVirtualAddress());
+					//描画！
+					dxCommon->GetCommandList()->DrawInstanced(6, 1, 0, 0);
 
 
 
