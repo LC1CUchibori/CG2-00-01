@@ -17,6 +17,8 @@
 #include <wrl.h>
 #include "Input.h"
 #include "DirectXCommon.h"
+#include "SpriteCommon.h"
+#include "Sprite.h"
 
 //#include "externals/imgui/imgui.h"
 //#include "externals/imgui/imgui_impl_dx12.h"
@@ -242,20 +244,24 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	if (SUCCEEDED(DXGIGetDebugInterface1(0, IID_PPV_ARGS(&debug)))) {
 	}
 
-
-
-
-
-	Input* input_ = nullptr;
 	WinApp* winApp = nullptr;
-	DirectXCommon* dxCommon = nullptr;
-
 	winApp = new WinApp();
 	winApp->Initialize();
+
+	Input* input_ = nullptr;
 	input_ = new Input();
 	input_->Initialize(winApp);
+
+	DirectXCommon* dxCommon = nullptr;
 	dxCommon = new DirectXCommon();
 	dxCommon->Initialize(winApp);
+
+	SpriteCommon* spriteCommon = nullptr;
+	spriteCommon = new SpriteCommon;
+	spriteCommon->Initialize();
+
+	Sprite* sprite = new Sprite();
+	sprite->Initialize();
 
 
 	#pragma region DescriptorHeapの生成
@@ -905,6 +911,8 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	delete input_;
 	delete winApp;
 	delete dxCommon;
+	delete spriteCommon;
+	delete sprite;
 #pragma endregion
 
 
