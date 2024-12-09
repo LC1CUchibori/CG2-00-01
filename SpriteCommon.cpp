@@ -161,5 +161,6 @@ void SpriteCommon::GraphicsPipelineGenerated()
 	hr = dxCommon_->GetDevice()->CreateGraphicsPipelineState(&graphicsPipelineStateDesc,
 		IID_PPV_ARGS(&graphicsPipelineState));
 	assert(SUCCEEDED(hr));
+
 #pragma endregion
 }
