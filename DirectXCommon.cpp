@@ -323,123 +323,88 @@ void DirectXCommon::ImGuiInitialize()
 
 void DirectXCommon::PreDraw()
 {
-#pragma region バックバッファの番号取得
+    // バックバッファの番号取得
 	UINT backBufferIndex = swapChain->GetCurrentBackBufferIndex();
-#pragma endregion
 
-#pragma region TransitionBarrierを貼る
+    // TransitionBarrierを貼る
 	D3D12_RESOURCE_BARRIER barrier{};
-
 	barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-
 	barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
-
 	barrier.Transition.pResource = swapChainResources[backBufferIndex].Get();
-
 	barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_PRESENT;
-
 	barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;
-
 	commandList->ResourceBarrier(1, &barrier);
-
 	//commandList->OMSetRenderTargets(1, &rtvHandles[backBufferIndex], false, nullptr);
-;
-#pragma endregion
 
-#pragma region RTVとDSVを設定する
-	// 描画先のRTVとDSVを設定する
+    // RTVとDSVを設定する
 	D3D12_CPU_DESCRIPTOR_HANDLE dsvHandle = dsvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
-	//D3D12_GPU_DESCRIPTOR_HANDLE srvHandle = srvDescriptorHeap->GetGPUDescriptorHandleForHeapStart();
+	D3D12_GPU_DESCRIPTOR_HANDLE srvHandle = srvDescriptorHeap->GetGPUDescriptorHandleForHeapStart();
 	commandList->OMSetRenderTargets(1, &rtvHandles[backBufferIndex], false, &dsvHandle);
-#pragma endregion
 	
-#pragma region 画面全体の色をクリア
+    // 画面全体の色をクリア
 	float clearColor[] = { 0.1f,0.25f,0.5f,1.0f };
 	commandList->ClearRenderTargetView(rtvHandles[backBufferIndex], clearColor, 0, nullptr);
-#pragma endregion
 
-#pragma region 画面全体の深度をクリア
+    // 画面全体の深度をクリア
 	commandList->ClearDepthStencilView(dsvHandle, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
-#pragma endregion
 
-#pragma region SRV用のデスクリプタヒープを指定
+    // SRV用のデスクリプタヒープを指定
 	//描画用のDescriptHeap
-	ID3D12DescriptorHeap *descriptorHepes[] = { srvDescriptorHeap.Get()};
+	ID3D12DescriptorHeap* descriptorHepes[] = { srvDescriptorHeap.Get() };
 	commandList->SetDescriptorHeaps(1, descriptorHepes);
 	ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), commandList.Get());
-#pragma endregion
 
-#pragma region ビューポート領域の設定
+    // ビューポート領域の設定
 	commandList->RSSetViewports(1, &viewport);
-#pragma endregion
 
-#pragma region シザー矩形の設定
+    // シザー矩形の設定
 	commandList->RSSetScissorRects(1, &scissorRect);
-#pragma endregion
 }
 
 void DirectXCommon::PostDraw()
 {
-#pragma region バックバッファの番号取得
+    // バックバッファの番号取得
 	UINT backBufferIndex = swapChain->GetCurrentBackBufferIndex();
-#pragma endregion
 
-#pragma region リソースバリアで表示状態に変更
+    // リソースバリアで表示状態に変更
 	D3D12_RESOURCE_BARRIER barrier{};
-
 	barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-
 	barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
-
 	barrier.Transition.pResource = swapChainResources[backBufferIndex].Get();
-
 	barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
-
 	barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PRESENT;
-
 	commandList->ResourceBarrier(1, &barrier);
-#pragma endregion
 
-#pragma region グラフィックスコマンドをクローズ
+    // グラフィックスコマンドをクローズ
 	HRESULT hr = commandList->Close();
-
 	assert(SUCCEEDED(hr));
-#pragma endregion
 
-#pragma region GPUコマンドの実行
+    // GPUコマンドの実行
 	Microsoft::WRL::ComPtr<ID3D12CommandList> commandLists[] = { commandList.Get()};
 	commandQueue->ExecuteCommandLists(1, commandLists->GetAddressOf());
-#pragma endregion
 
-#pragma region GPU画面の交換を通知
+    // GPU画面の交換を通知
 	swapChain->Present(1, 0);
-#pragma endregion
 
-#pragma region Fenceの値を更新
+	// コマンド完了待ち
+	fenceValue++;
+
+	// コマンドキューにシグナルに送る
+	commandQueue->Signal(fence.Get(), fenceValue);
+
+    // Fenceの値を更新
 	if (fence->GetCompletedValue() < fenceValue) {
 		fence->SetEventOnCompletion(fenceValue, fenceEvent);
-
 		WaitForSingleObject(fenceEvent, INFINITE);
 	}
-#pragma endregion
 
-#pragma region コマンドキューにシグナルに送る
-	commandQueue->Signal(fence.Get(), fenceValue);
-#pragma endregion
-
-#pragma region コマンド完了待ち
-	fenceValue++;
-#pragma endregion
-
-#pragma region コマンドアロケーターのリセット
+    // コマンドアロケーターのリセット
 	hr = commandAllocator->Reset();
 	assert(SUCCEEDED(hr));
-#pragma endregion
 
-#pragma region コマンドリストのリセット
+    // コマンドリストのリセット
 	hr = commandList->Reset(commandAllocator.Get(), nullptr);
 	assert(SUCCEEDED(hr));
-#pragma endregion
 }
 
 ID3D12Resource* DirectXCommon::CreateDepthStencilTexturResource(ID3D12Device* device, int32_t width, int32_t height)
@@ -556,17 +521,17 @@ Microsoft::WRL::ComPtr<ID3D12Resource> DirectXCommon::CreateBufferResource(size_
 
 	vertexResourceDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
 
-	Microsoft::WRL::ComPtr<ID3D12Resource> vertexResource = nullptr;
+	Microsoft::WRL::ComPtr<ID3D12Resource> resource = nullptr;
 	HRESULT hr = device->CreateCommittedResource(
 		&uploadHeapProperties,
 		D3D12_HEAP_FLAG_NONE,
 		&vertexResourceDesc,
 		D3D12_RESOURCE_STATE_GENERIC_READ,
 		nullptr,
-		IID_PPV_ARGS(&vertexResource));
+		IID_PPV_ARGS(&resource));
 	assert(SUCCEEDED(hr));
 
-	return vertexResource;
+	return resource;
 }
 
 Microsoft::WRL::ComPtr<ID3D12Resource> DirectXCommon::CreateTextureResource(ID3D12Device*device,const DirectX::TexMetadata&metadata)
@@ -593,6 +558,7 @@ Microsoft::WRL::ComPtr<ID3D12Resource> DirectXCommon::CreateTextureResource(ID3D
 		&heapProperties,                   // Heapの設定
 		D3D12_HEAP_FLAG_NONE,              // Heapの特殊設定。特になし
 		&resouceDesc,                      // Resourceの設定
+
 		D3D12_RESOURCE_STATE_COPY_DEST,    // 初回のResourceState, Textureは基本読むだけ
 		nullptr,                           // Clear最適値。使わないのでnullptr
 		IID_PPV_ARGS(&resource));          // 作成するResourceポインタへのポインタ
