@@ -1047,6 +1047,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 	// Transformの初期化
 	Particle particles[kNumMaxInstance];
+	//std::list<Particle>particles;
 	for (uint32_t index = 0; index < kNumMaxInstance; ++index) {
 		particles[index] = MakeNewParticle(randomEngine);
 
@@ -1322,7 +1323,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				Matrix4x4 viewProjectionMatrix = Multiply(viewMatrix, projectionMatrix);
 				Matrix4x4 worldViewProjectionMatrix = Multiply(worldMatrix, viewProjectionMatrix);
 				Matrix4x4 backToFromMatrix = MakeRatateYMatrix(std::numbers::pi_v<float>);
-				Matrix4x4billboardMatrix = Multiply(backToFromMatrix, cameraMatrix);
+				Matrix4x4 billboardMatrix = Multiply(backToFromMatrix, cameraMatrix);
 					billboardMatrix.m[3][0] = 0.0f;
 					billboardMatrix.m[3][1] = 0.0f;
 					billboardMatrix.m[3][2] = 0.0f;
