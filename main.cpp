@@ -180,13 +180,17 @@ Transform transform{ {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f},{0.0f,0.0f,0.0f } };
 #pragma endregion
 
 #pragma region cameraTransform変数
-Transform cameraTransform{ {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f},{0.0f,0.0f,-5.0f} };
+Transform cameraTransform{ {1.0f,1.0f,1.0f},{0.3f,0.0f,0.0f},{0.0f,4.0f,-10.0f} };
 #pragma endregion
 
 #pragma region spriteTransform変数
 Transform transformSprite{ {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f} ,{0.0f,0.0f,0.0f} };
 #pragma endregion
 
+struct CameraForGPU
+{
+	Vector3 worldPosition;
+};
 
 #pragma region DescriptorHeapの作成関数
 ID3D12DescriptorHeap* CreateDescriptorHeap(
