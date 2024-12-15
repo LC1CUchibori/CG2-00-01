@@ -4,6 +4,9 @@ void SpriteCommon::Initialize(DirectXCommon* dxCommon)
 {
 	dxCommon_ = dxCommon;
 
+	RootSigunetureCreate();
+
+
 	GraphicsPipelineGenerated();
 
 }
@@ -76,7 +79,7 @@ void SpriteCommon::RootSigunetureCreate()
 		assert(false);
 	}
 
-	Microsoft::WRL::ComPtr<ID3D12RootSignature>rootSignature = nullptr;
+	rootSignature = nullptr;
 	hr = dxCommon_->GetDevice()->CreateRootSignature(0,
 		signatureBlob->GetBufferPointer(), signatureBlob->GetBufferSize(),
 		IID_PPV_ARGS(&rootSignature)
@@ -157,7 +160,7 @@ void SpriteCommon::GraphicsPipelineGenerated()
 	graphicsPipelineStateDesc.DepthStencilState = dxCommon_->GetDepthStencilDesc();
 	graphicsPipelineStateDesc.DSVFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
 	// 実際に生成
-	Microsoft::WRL::ComPtr<ID3D12PipelineState> graphicsPipelineState = nullptr;
+	 graphicsPipelineState = nullptr;
 	hr = dxCommon_->GetDevice()->CreateGraphicsPipelineState(&graphicsPipelineStateDesc,
 		IID_PPV_ARGS(&graphicsPipelineState));
 	assert(SUCCEEDED(hr));

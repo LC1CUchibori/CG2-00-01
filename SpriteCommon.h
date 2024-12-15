@@ -11,6 +11,7 @@ public:
 	// 共通描画設定
 	void CommonDraw();
 
+private:
 	// ルートシグネチャの作成
 	void RootSigunetureCreate();
 	// グラフィックスパイプラインの生成
@@ -23,5 +24,6 @@ private:
 
 	Microsoft::WRL::ComPtr<ID3D12RootSignature> rootSignature = nullptr;
 	Microsoft::WRL::ComPtr<ID3D12PipelineState> graphicsPipelineState = nullptr;
+
 };
 
