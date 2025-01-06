@@ -6,7 +6,6 @@ void SpriteCommon::Initialize(DirectXCommon* dxCommon)
 
 	RootSigunetureCreate();
 
-
 	GraphicsPipelineGenerated();
 
 }
