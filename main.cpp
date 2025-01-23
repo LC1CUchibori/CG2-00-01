@@ -176,7 +176,6 @@ IDxcBlob* CompileShader(
 }
 #pragma endregion
 
-
 #pragma region Transform変数
 Transform transform{ {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f},{0.0f,0.0f,0.0f } };
 #pragma endregion

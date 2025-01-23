@@ -35,21 +35,23 @@ ConstantBuffer<Camera> gCamera : register(b2);
 PixelShaderOutput main(VertexShaderOutput input)
 {
     float32_t4 textureColor = gTexture.Sample(gSample, input.texcoord);
-    float32_t3 toEye = normalize(gCamera.worldPosition - input.worldPosition);
-    float32_t3 reflectLight = reflect(gDirectionalLight.direction, normalize(input.normal));
-    float RdotE = dot(reflectLight, toEye);
-    float specularPow = pow(saturate(RdotE), gMaterial.shininess);
     
     PixelShaderOutput output;
     if (gMaterial.enableLighting != 0)
     {
+        float32_t3 toEye = normalize(gCamera.worldPosition - input.worldPosition);
+        float32_t3 reflectLight = reflect(gDirectionalLight.direction, normalize(input.normal));
+        float RdotE = dot(reflectLight, toEye);
+        float specularPow = pow(saturate(RdotE), gMaterial.shininess);
+        
         float NdotL = dot(normalize(input.normal), -gDirectionalLight.direction);
         float cos = pow(NdotL * 0.5f + 0.5f, 2.0f);
+           
         //output.color = gMaterial.color * textureColor * gDirectionalLight.color * cos * gDirectionalLight.intensity;
    
         // 拡散反射
         float32_t3 diffuse = gMaterial.color.rgb * textureColor.rgb * gDirectionalLight.color.rgb * cos * gDirectionalLight.intensity;
-    　　// 鏡面反射
+        // 鏡面反射
         float32_t3 speculer = gDirectionalLight.color.rgb * gDirectionalLight.intensity * specularPow * float32_t3(1.0f, 1.0f, 1.0f);
         // 拡散反射+鏡面反射
         output.color.rgb = diffuse + speculer;
