@@ -54,6 +54,16 @@ struct DirectionalLighting {
 	float intensity;
 };
 
+// 正規化
+Vector3 Normalize(const Vector3& v) {
+	Vector3 result;
+	result.x = float(v.x / sqrt((v.x * v.x) + (v.y * v.y) + (v.z * v.z)));
+	result.y = float(v.y / sqrt((v.x * v.x) + (v.y * v.y) + (v.z * v.z)));
+	result.z = float(v.z / sqrt((v.x * v.x) + (v.y * v.y) + (v.z * v.z)));
+
+	return result;
+}
+
 Matrix4x4 MakeIdentity4x4() {
 	Matrix4x4 result;
 
