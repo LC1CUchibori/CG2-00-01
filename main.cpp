@@ -13,7 +13,6 @@
 #include <algorithm>
 #include <fstream>
 #include <sstream>
-#include "math.h"
 #include <wrl.h>
 #include "Input.h"
 #include "DirectXCommon.h"
@@ -257,10 +256,11 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	dxCommon->Initialize(winApp);
 
 	SpriteCommon* spriteCommon = nullptr;
-	spriteCommon = new SpriteCommon;
+	spriteCommon = new SpriteCommon();
 	spriteCommon->Initialize(dxCommon);
 
-	Sprite* sprite = new Sprite();
+	Sprite* sprite = nullptr;
+	sprite = new Sprite();
 	sprite->Initialize(spriteCommon);
 
 
@@ -320,8 +320,16 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	transformationMatrixData->World = MakeIdentity4x4();
 #pragma endregion
 
+#pragma region 平行光源をShderで使う
+	Microsoft::WRL::ComPtr<ID3D12Resource> directionalLightSprite =dxCommon-> CreateBufferResource(sizeof(DirectionalLighting));
+#pragma endregion
+	DirectionalLighting* directionalLightData = nullptr;
 
+	directionalLightSprite->Map(0, nullptr, reinterpret_cast<void**>(&directionalLightData));
 
+	directionalLightData->color = { 1.0f,1.0f,1.0f,1.0f };
+	directionalLightData->direction = { 0.0f,-1.0f,0.0f };
+	directionalLightData->intensity = 1.0f;
 
 
 
@@ -381,7 +389,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	//		vertexData[start].normal.y = vertexData[start].position.y;
 	//		vertexData[start].normal.z = vertexData[start].position.z;
 
-	//		//基準点b
+	//		//基準点
 	//		start++;
 	//		vertexData[start].position.x = std::cosf(lat + kLatEvery) * std::cosf(lon);
 	//		vertexData[start].position.y = std::sinf(lat + kLatEvery);
@@ -505,12 +513,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	Matrix4x4 projectionMatrix;
 
 	Matrix4x4 worldProjectionMatrix;
-	Matrix4x4 worldMatrixSprite;
+	/*Matrix4x4 worldMatrixSprite;
 	Matrix4x4 viewMatrixSprite;
 	Matrix4x4 projectionMatrixSprite;
 	Matrix4x4 worldViewProjectionMatrixSprite;
 
-	Matrix4x4 uvTransformMatrix;
+	Matrix4x4 uvTransformMatrix;*/
 		
 	Matrix4x4 worldMatrixModel;
 	Matrix4x4 cameraMatrixModel;
@@ -571,21 +579,6 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		transformationMatrixData->World = worldMatrix;
 #pragma endregion
 
-#pragma region WVPMatrixを作って書き込む
-		worldMatrixSprite = MakeAffineMatrix(transformSprite.scale, transformSprite.rotate, transformSprite.translata);
-		viewMatrixSprite = MakeIdentity4x4();
-		projectionMatrixSprite = MakeOrthographicMatrix(0.0f, 0.0f, float(WinApp::kClientWidth), float(WinApp::kClientHeight), 0.0f, 100.0f);
-		worldViewProjectionMatrixSprite = Multiply(worldMatrixSprite, Multiply(viewMatrixSprite, projectionMatrixSprite));
-		transformationMatrixDataSprite->WVP = worldViewProjectionMatrixSprite;
-		transformationMatrixDataSprite->World = worldMatrix;
-#pragma endregion
-
-		uvTransformMatrix = MakeScaleMatrix(uvTransformSprite.scale);
-		uvTransformMatrix = Multiply(uvTransformMatrix, MakeRatateZMatrix(uvTransformSprite.rotate.z));
-		uvTransformMatrix = Multiply(uvTransformMatrix, MakeTranslateMatrix(uvTransformSprite.translata));
-		materialDataSprite->uvTransform = uvTransformMatrix;
-
-
 		worldMatrixModel = MakeAffineMatrix(modelTrasform.scale,modelTrasform.rotate,modelTrasform.translata);
 		cameraMatrixModel = MakeAffineMatrix(cameraTransform.scale, cameraTransform.rotate, cameraTransform.translata);
 		viewMatrixModel = Inverse(cameraMatrixModel);
@@ -597,6 +590,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		ImGui::NewFrame();
 
 		// ImGuiウィンドウの作成
+		DirectionalLighting* directionalLightData = nullptr;
 		ImGui::Begin("Transform Controls");
 		if (ImGui::CollapsingHeader("SphereTransform")) {
 			ImGui::ColorEdit4("Text Color With Flags", &materialData->color.x, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_AlphaBar);
@@ -647,19 +641,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 					dxCommon->GetCommandList()->DrawInstanced(UINT(modelData.vertices.size()), 1, 0, 0);
 		#pragma endregion
 		
-					dxCommon->GetCommandList()->IASetIndexBuffer(&indexBufferViewSprite);
-					dxCommon->GetCommandList()->DrawIndexedInstanced(6, 1, 0, 0, 0);
-		
-		
-		#pragma region Spriteの描画
-					dxCommon->GetCommandList()->IASetVertexBuffers(0, 1, &vertexBufferViewSprite);
-					dxCommon->GetCommandList()->SetGraphicsRootConstantBufferView(0, transformationMatrixResourceSprite->GetGPUVirtualAddress());
-					//TransFomationMatrixBufferの場所を設定
-					dxCommon->GetCommandList()->SetGraphicsRootConstantBufferView(1, transformationMatrixResourceSprite->GetGPUVirtualAddress());
-					dxCommon->GetCommandList()->SetGraphicsRootDescriptorTable(2, textureSrvHandleGPU);
-					dxCommon->GetCommandList()->SetGraphicsRootConstantBufferView(0, materialResourceSprite->GetGPUVirtualAddress());
-					//描画！
-					dxCommon->GetCommandList()->DrawInstanced(6, 1, 0, 0);
+				
 
 
 

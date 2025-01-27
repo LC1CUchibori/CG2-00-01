@@ -11,13 +11,14 @@ public:
 	// 共通描画設定
 	void CommonDraw();
 
+	DirectXCommon* GetDxCommon()const { return dxCommon_; }
+
 private:
 	// ルートシグネチャの作成
 	void RootSigunetureCreate();
 	// グラフィックスパイプラインの生成
 	void GraphicsPipelineGenerated();
 
-	DirectXCommon* GetDxCommon()const { return dxCommon_; }
 
 private:
 	DirectXCommon* dxCommon_;

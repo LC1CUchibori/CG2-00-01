@@ -7,6 +7,7 @@
 #include "StringUtility.h"
 #include "WinApp.h"
 #include <array>
+#include "DirectXCommon.h"
 
 #include <cassert>
 #include <dxcapi.h>
@@ -38,45 +39,82 @@ public:
 
 	void VertexBufferViewSprite();
 
-private:
-	SpriteCommon* spriteCommon = nullptr;
+	void WPVMatrix();
 
-	struct VertexData
-	{
-		Vector4 position;
-		Vector2 texcoord;
-		Vector3 normal;
-	};
+	void UvTransformMatrix();
+
+	void Draw();
 
 	DirectXCommon* GetDxCommon()const { return dxCommon_; }
-	DirectXCommon* dxCommon_;
 
-#pragma region VertexBufferResourceを生成
-	Microsoft::WRL::ComPtr<ID3D12Resource> vertexResourceSprite = dxCommon_->CreateBufferResource(sizeof(VertexData) * 6);
-#pragma endregion
+private:
+	SpriteCommon* spriteCommon_ = nullptr;
 
-#pragma region TransfomationMatrixSprite用のResourceを作る
-	// Sprite用のTransfomationMatrix用のリソースを作る。Matrix4x4 1つ分のサイズを用意する
-	Microsoft::WRL::ComPtr<ID3D12Resource> transformationMatrixResourceSprite =dxCommon_-> CreateBufferResource(sizeof(TransformationMatrix));
-#pragma endregion
+	DirectXCommon* dxCommon_ = nullptr;
 
-#pragma region 平行光源をShderで使う
-	Microsoft::WRL::ComPtr<ID3D12Resource> directionalLightSprite =dxCommon_-> CreateBufferResource(sizeof(DirectionalLighting));
-#pragma endregion
+	Microsoft::WRL::ComPtr<ID3D12Resource> vertexResourceSprite;
 
-#pragma region Sprite用のリソース
-	// Sprite用のマテリアルリソースを作る
-	Microsoft::WRL::ComPtr<ID3D12Resource> materialResourceSprite = dxCommon_->CreateBufferResource(sizeof(Material));
-#pragma endregion
+	Microsoft::WRL::ComPtr<ID3D12Resource> transformationMatrixResourceSprite;
 
-#pragma region Index用のリソース
-	Microsoft::WRL::ComPtr<ID3D12Resource> indeResourceSprite = dxCommon_->CreateBufferResource(sizeof(uint32_t) * 6);
-#pragma endregion
+	Microsoft::WRL::ComPtr<ID3D12Resource> directionalLightSprite;
 
+	Microsoft::WRL::ComPtr<ID3D12Resource> materialResourceSprite;
 
+	Microsoft::WRL::ComPtr<ID3D12Resource> indeResourceSprite;
+
+	D3D12_GPU_DESCRIPTOR_HANDLE textureSrvHandleGPU;
+
+	D3D12_INDEX_BUFFER_VIEW indexBufferViewSprite{};
 
 	////vetexResourceSprite頂点バッファーを作成する
 	D3D12_VERTEX_BUFFER_VIEW vertexBufferViewSprite{ };
+
+	// データを書き込む
+	TransformationMatrix* transformationMatrixDataSprite = nullptr;
+
+	// 単位行列を書き込んでおく
+	TransformationMatrix* transformationMatrixData = nullptr;
+
+	Material* materialDataSprite = nullptr;
+
+	Material* materialData = nullptr;
+
+	DirectionalLighting* directionalLightData = nullptr;
+
+	uint32_t* indexDataSprite = nullptr;
+
+	//頂点リソースにデータを書き込む
+	VertexData* vertexDataSprite = nullptr;
+
 	
+#pragma region spriteTransform変数
+	Transform transformSprite{ {1.0f,1.0f,1.0f},{0.0f,0.0f,0.0f} ,{0.0f,0.0f,0.0f} };
+#pragma endregion
+
+#pragma region UVTransform変数
+	Transform uvTransformSprite{
+		{1.0f,1.0f,1.0f},
+		{0.0f,0.0f,0.0f},
+		{0.0f,0.0f,0.0f},
+	};
+
+	Matrix4x4 worldMatrix;
+	Matrix4x4 cameraMatrix;
+	Matrix4x4 viewMatrix;
+	Matrix4x4 projectionMatrix;
+
+	Matrix4x4 worldProjectionMatrix;
+	Matrix4x4 worldMatrixSprite;
+	Matrix4x4 viewMatrixSprite;
+	Matrix4x4 projectionMatrixSprite;
+	Matrix4x4 worldViewProjectionMatrixSprite;
+
+	Matrix4x4 uvTransformMatrix;
+
+	Matrix4x4 worldMatrixModel;
+	Matrix4x4 cameraMatrixModel;
+	Matrix4x4 viewMatrixModel;
+	Matrix4x4 projectionMatrixModel;
+	Matrix4x4 worldProjectionMatrixModel;
 };
 

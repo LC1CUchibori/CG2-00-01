@@ -3,37 +3,46 @@
 
 void Sprite::Initialize(SpriteCommon*spriteCommon)
 {
-	this->spriteCommon = spriteCommon;
+	this->spriteCommon_ = spriteCommon;
+
+// VertexBufferResourceを生成
+	vertexResourceSprite = spriteCommon_->GetDxCommon()->CreateBufferResource(sizeof(VertexData) * 6);
+
+// TransfomationMatrixSprite用のResourceを作る
+	transformationMatrixResourceSprite =spriteCommon_->GetDxCommon()-> CreateBufferResource(sizeof(TransformationMatrix));
+
+// 平行光源をShderで使う
+    directionalLightSprite =spriteCommon_->GetDxCommon()-> CreateBufferResource(sizeof(DirectionalLighting));
+
+// Sprite用のリソース
+	materialResourceSprite = spriteCommon_->GetDxCommon()->CreateBufferResource(sizeof(Material));
+
+// Index用のリソース
+	indeResourceSprite =spriteCommon_->GetDxCommon()->CreateBufferResource(sizeof(uint32_t) * 6);
+
+	textureSrvHandleGPU = spriteCommon_->GetDxCommon()->GetSRVGPUDescriptorHandle(1);
 }
 
 void Sprite::TransformationMatrixSprite()
 {
-	// データを書き込む
-	TransformationMatrix* transformationMatrixDataSprite = nullptr;
 	// 書き込むためのアドレスを取得
 	transformationMatrixResourceSprite->Map(0, nullptr, reinterpret_cast<void**>(&transformationMatrixDataSprite));
-	// 単位行列を書き込んでおく
-	TransformationMatrix* transformationMatrixData = nullptr;
 	transformationMatrixData->WVP = MakeIdentity4x4();
 	transformationMatrixData->World = MakeIdentity4x4();
 }
 
 void Sprite::MaterialResourceSprite()
 {
-	Material* materialDataSprite = nullptr;
 	materialResourceSprite->Map(0, nullptr, reinterpret_cast<void**>(&materialDataSprite));
 	materialDataSprite->color = { Vector4(1.0f, 1.0f, 1.0f, 1.0f) };
 	materialDataSprite->enableLighting = false;
 
-	Material* materialData = nullptr;
 	materialData->uvTransform = MakeIdentity4x4();
 	materialDataSprite->uvTransform = MakeIdentity4x4();
 }
 
 void Sprite::DirectionLightSprite()
 {
-	DirectionalLighting* directionalLightData = nullptr;
-
 	directionalLightSprite->Map(0, nullptr, reinterpret_cast<void**>(&directionalLightData));
 
 	directionalLightData->color = { 1.0f,1.0f,1.0f,1.0f };
@@ -43,7 +52,7 @@ void Sprite::DirectionLightSprite()
 
 void Sprite::IndexBufferViewSprite()
 {
-	D3D12_INDEX_BUFFER_VIEW indexBufferViewSprite{};
+	
 	// リソースの先頭のアドレスから使う
 	indexBufferViewSprite.BufferLocation = indeResourceSprite->GetGPUVirtualAddress();
 	// 使用するリソースのサイズはインデックス6つ分のサイズ
@@ -52,7 +61,6 @@ void Sprite::IndexBufferViewSprite()
 	indexBufferViewSprite.Format = DXGI_FORMAT_R32_UINT;
 
 	// インデックスリソースにデータを書き込む
-	uint32_t* indexDataSprite = nullptr;
 	indeResourceSprite->Map(0, nullptr, reinterpret_cast<void**>(&indexDataSprite));
 	indexDataSprite[0] = 0; indexDataSprite[1] = 1; indexDataSprite[2] = 2;
 	indexDataSprite[3] = 1; indexDataSprite[4] = 3; indexDataSprite[5] = 2;
@@ -66,8 +74,6 @@ void Sprite::VertexBufferViewSprite()
 	vertexBufferViewSprite.SizeInBytes = sizeof(VertexData) * 6;
 	//1頂点当たりのサイズ
 	vertexBufferViewSprite.StrideInBytes = sizeof(VertexData);
-	//頂点リソースにデータを書き込む
-	VertexData* vertexDataSprite = nullptr;
 	//書き込むためのアドレスを取得
 	vertexResourceSprite->Map(0, nullptr, reinterpret_cast<void**>(&vertexDataSprite));
 	//一個目
@@ -91,6 +97,42 @@ void Sprite::VertexBufferViewSprite()
 	vertexDataSprite[5].texcoord = { 1.0f,1.0f };
 	vertexDataSprite[5].normal = { 0.0f,0.0f,-1.0f };
 #pragma endregion
+}
+
+void Sprite::WPVMatrix()
+{
+#pragma region WVPMatrixを作って書き込む
+	worldMatrixSprite = MakeAffineMatrix(transformSprite.scale, transformSprite.rotate, transformSprite.translata);
+	viewMatrixSprite = MakeIdentity4x4();
+	projectionMatrixSprite = MakeOrthographicMatrix(0.0f, 0.0f, float(WinApp::kClientWidth), float(WinApp::kClientHeight), 0.0f, 100.0f);
+	worldViewProjectionMatrixSprite = Multiply(worldMatrixSprite, Multiply(viewMatrixSprite, projectionMatrixSprite));
+	transformationMatrixDataSprite->WVP = worldViewProjectionMatrixSprite;
+	transformationMatrixDataSprite->World = worldMatrix;
+}
+
+void Sprite::UvTransformMatrix()
+{
+	uvTransformMatrix = MakeScaleMatrix(uvTransformSprite.scale);
+	uvTransformMatrix = Multiply(uvTransformMatrix, MakeRatateZMatrix(uvTransformSprite.rotate.z));
+	uvTransformMatrix = Multiply(uvTransformMatrix, MakeTranslateMatrix(uvTransformSprite.translata));
+	materialDataSprite->uvTransform = uvTransformMatrix;
+}
+
+void Sprite::Draw()
+{
+	dxCommon_->GetCommandList()->IASetIndexBuffer(&indexBufferViewSprite);
+	dxCommon_->GetCommandList()->DrawIndexedInstanced(6, 1, 0, 0, 0);
+
+
+#pragma region Spriteの描画
+	dxCommon_->GetCommandList()->IASetVertexBuffers(0, 1, &vertexBufferViewSprite);
+	dxCommon_->GetCommandList()->SetGraphicsRootConstantBufferView(0, transformationMatrixResourceSprite->GetGPUVirtualAddress());
+	//TransF_omationMatrixBufferの場所を設定
+	dxCommon_->GetCommandList()->SetGraphicsRootConstantBufferView(1, transformationMatrixResourceSprite->GetGPUVirtualAddress());
+	dxCommon_->GetCommandList()->SetGraphicsRootDescriptorTable(2, textureSrvHandleGPU);
+	dxCommon_->GetCommandList()->SetGraphicsRootConstantBufferView(0, materialResourceSprite->GetGPUVirtualAddress());
+	//描画！
+	dxCommon_->GetCommandList()->DrawInstanced(6, 1, 0, 0);
 }
 
 
