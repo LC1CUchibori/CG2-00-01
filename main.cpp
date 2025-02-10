@@ -23,12 +23,9 @@
 //#include "externals/imgui/imgui_impl_win32.h"
 #include "externals/DirectXTex/DirectXTex.h"
 #include "externals/DirectXTex/d3dx12.h"
-extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
-#pragma comment(lib,"d3d12.lib")
-#pragma comment(lib,"dxgi.lib")
-#pragma comment(lib,"dxguid.lib")
-#pragma comment(lib,"dxcompiler.lib")
+
+
 
 
 
@@ -236,15 +233,6 @@ bool useMonsterBall = true;
 
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	D3DResourceLeakChecker leakCheck;
-
-
-	IDXGIDebug1* debug;
-	if (SUCCEEDED(DXGIGetDebugInterface1(0, IID_PPV_ARGS(&debug)))) {
-	}
-
-
-
-
 
 	Input* input_ = nullptr;
 	WinApp* winApp = nullptr;
@@ -896,9 +884,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 
 #pragma region 解放処理
 
-	ImGui_ImplDX12_Shutdown();
-	ImGui_ImplWin32_Shutdown();
-	ImGui::DestroyContext();
+	
 
 	winApp->Finalize();
 

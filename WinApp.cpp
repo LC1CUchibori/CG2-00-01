@@ -1,4 +1,6 @@
 #include "WinApp.h"
+#include "externals/imgui/imgui_impl_dx12.h"
+#include "externals/imgui/imgui_impl_win32.h"
 
 #pragma comment(lib,"winmm.lib")
 
@@ -65,6 +67,10 @@ void WinApp::Finalize()
 {
 	CloseWindow(hwnd);
 	CoUninitialize();
+
+	ImGui_ImplDX12_Shutdown();
+	ImGui_ImplWin32_Shutdown();
+	ImGui::DestroyContext();
 }
 
 bool WinApp::ProcessMessage()
