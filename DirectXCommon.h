@@ -58,6 +58,7 @@ public: // メンバ関数
 	void PreDraw();
 	// 描画後処理
 	void PostDraw();
+	void Finalize();
 
 	Microsoft::WRL::ComPtr<ID3D12Resource> CreateDepthStencilTexturResource(ID3D12Device* device, int32_t width, int32_t height);
 

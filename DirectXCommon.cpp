@@ -414,6 +414,15 @@ void DirectXCommon::PostDraw()
 	assert(SUCCEEDED(hr));
 }
 
+void DirectXCommon::Finalize()
+{
+	ImGui_ImplDX12_Shutdown();
+	ImGui_ImplWin32_Shutdown();
+	ImGui::DestroyContext();
+
+	CloseHandle(fenceEvent);
+}
+
 Microsoft::WRL::ComPtr<ID3D12Resource> DirectXCommon::CreateDepthStencilTexturResource(ID3D12Device* device, int32_t width, int32_t height)
 {
 	// 生成するResourceの記述

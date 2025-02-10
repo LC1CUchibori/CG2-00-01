@@ -68,9 +68,6 @@ void WinApp::Finalize()
 	CloseWindow(hwnd);
 	CoUninitialize();
 
-	ImGui_ImplDX12_Shutdown();
-	ImGui_ImplWin32_Shutdown();
-	ImGui::DestroyContext();
 }
 
 bool WinApp::ProcessMessage()
