@@ -59,7 +59,7 @@ public: // メンバ関数
 	// 描画後処理
 	void PostDraw();
 
-	ID3D12Resource* CreateDepthStencilTexturResource(ID3D12Device* device, int32_t width, int32_t height);
+	Microsoft::WRL::ComPtr<ID3D12Resource> CreateDepthStencilTexturResource(ID3D12Device* device, int32_t width, int32_t height);
 
 	ID3D12Device* GetDevice() { return device.Get(); }
 	ID3D12GraphicsCommandList* GetCommandList()const { return commandList.Get(); }
@@ -167,7 +167,6 @@ private:
 	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> dsvDescriptorHeap;
 	// depthStencilResourece
 	Microsoft::WRL::ComPtr<ID3D12Resource> depthStencilResource;
-
 	// fence
 	Microsoft::WRL::ComPtr<ID3D12Fence> fence;
 	
@@ -182,7 +181,10 @@ private:
 	Microsoft::WRL::ComPtr <ID3D12Resource> intermediateResource;
 
 
-	IDxcIncludeHandler* includeHandler = nullptr;
+	Microsoft::WRL::ComPtr<IDxcIncludeHandler> includeHandler = nullptr;
+
+
+	DXGI_ADAPTER_DESC3 adapterDesc{};
 
 	DXGI_SWAP_CHAIN_DESC1 swapChainDesc{};
 
@@ -208,12 +210,14 @@ private:
 
 	D3D12_INFO_QUEUE_FILTER filter{};
 
-	IDxcUtils* dxcUtils = nullptr;
-	IDxcCompiler3* dxcCompiler = nullptr;
+	Microsoft::WRL::ComPtr<IDxcUtils> dxcUtils = nullptr;
+	Microsoft::WRL::ComPtr<IDxcCompiler3> dxcCompiler = nullptr;
 
 	Microsoft::WRL::ComPtr<ID3D12Resource> textureResources3;
 	Microsoft::WRL::ComPtr<ID3D12Resource> textureResources2;
 	Microsoft::WRL::ComPtr<ID3D12Resource> textureResources;
+
+	
 
 
 	// WindowsAPI

@@ -323,8 +323,6 @@ void DirectXCommon::ImGuiInitialize()
 		srvDescriptorHeap.Get(),
 		srvDescriptorHeap->GetCPUDescriptorHandleForHeapStart(),
 		srvDescriptorHeap->GetGPUDescriptorHandleForHeapStart());
-
-
 }
 
 void DirectXCommon::PreDraw()
@@ -416,7 +414,7 @@ void DirectXCommon::PostDraw()
 	assert(SUCCEEDED(hr));
 }
 
-ID3D12Resource* DirectXCommon::CreateDepthStencilTexturResource(ID3D12Device* device, int32_t width, int32_t height)
+Microsoft::WRL::ComPtr<ID3D12Resource> DirectXCommon::CreateDepthStencilTexturResource(ID3D12Device* device, int32_t width, int32_t height)
 {
 	// 生成するResourceの記述
 	D3D12_RESOURCE_DESC resourceDesc{};
@@ -438,7 +436,8 @@ ID3D12Resource* DirectXCommon::CreateDepthStencilTexturResource(ID3D12Device* de
 	depthClearValue.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
 
 	// Resourceの生成
-	ID3D12Resource* resource = nullptr;
+
+	//ID3D12Resource* resource = nullptr;
 	HRESULT hr = device->CreateCommittedResource(
 		&heapProperties, // Heapの指定
 		D3D12_HEAP_FLAG_NONE, // Heapの構造は通常指定なし。特になし。
@@ -485,7 +484,7 @@ Microsoft::WRL::ComPtr<IDxcBlob> DirectXCommon::CompileShader(const std::wstring
 		&shaderSourceBuffer,
 		arguments,
 		_countof(arguments),
-		includeHandler,
+		includeHandler.Get(),
 		IID_PPV_ARGS(&shaderResult)
 	);
 
