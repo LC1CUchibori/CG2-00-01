@@ -17,6 +17,7 @@
 #include <wrl.h>
 #include "Input.h"
 #include "DirectXCommon.h"
+#include"D3DResourceLeakChecker.h"
 
 //#include "externals/imgui/imgui.h"
 //#include "externals/imgui/imgui_impl_dx12.h"
@@ -205,6 +206,7 @@ bool useMonsterBall = true;
 
 
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
+	D3DResourceLeakChecker leakChecker;
 
 	Input* input_ = nullptr;
 	WinApp* winApp = nullptr;
