@@ -464,7 +464,9 @@ ModelData LoadObjFile(const std::string& directoryPath, const std::string& filen
 // 判定を行うコールバック関数
 void judge_result(int result) {
 
+	transform.rotate.x += 0.05f;
 	transform.rotate.y += 0.05f;
+	transform.rotate.z += 0.1f;
 }
 
 bool useMonsterBall = true;
