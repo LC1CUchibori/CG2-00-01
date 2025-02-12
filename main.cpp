@@ -462,7 +462,7 @@ ModelData LoadObjFile(const std::string& directoryPath, const std::string& filen
 #pragma endregion
 
 // 判定を行うコールバック関数
-void judge_result(int result) {
+void Rotate_result(int result) {
 
 	transform.rotate.x += 0.05f;
 	transform.rotate.y += 0.05f;
@@ -1159,7 +1159,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 			uvTransformMatrix = Multiply(uvTransformMatrix, MakeTranslateMatrix(uvTransformSprite.translata));
 			materialDataSprite->uvTransform = uvTransformMatrix;
 
-			callback callback = judge_result;
+			callback callback = Rotate_result;
 
 			callback(0);
 
